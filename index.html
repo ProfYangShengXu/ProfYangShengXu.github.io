@@ -165,6 +165,9 @@ footer{padding:13vh 0 9vh;border-top:1px solid var(--line)}
         color:rgba(242,237,227,.7);text-align:center}
 .wipbar b{color:var(--acid);font-weight:400}
 
+
+.item h3 a{color:inherit;text-decoration:none}
+.item{cursor:pointer}
 </style>
 <script>document.documentElement.classList.add("js");</script>
 </head>
@@ -213,68 +216,72 @@ footer{padding:13vh 0 9vh;border-top:1px solid var(--line)}
     <h2 class="sec-title">作品</h2>
   </div>
 
-  <div class="item reveal" onclick="location.href=&#39;bb6.html&#39;" style="cursor:pointer" onclick="location.href='bb6.html'" style="cursor:pointer">
+  <div class="work">
+  <div class="item reveal" data-page="bb6.html">
     <div>
-      <h3><a href="bb6.html" style="color:inherit;text-decoration:none">bobanana6</a><small>SMALL-MODEL MULTI-AGENT · 在线服务</small></h3>
-      <p>面向小模型的多智能体运行时。用多智能体调度、任务分层与 harness 设计补足小模型的能力短板，承担大批量、中等复杂度的任务 —— 补的是强模型单智能体 harness 覆盖不到的那一段。</p>
+      <h3><a href="bb6.html">bobanana6</a><small>SMALL-MODEL MULTI-AGENT · 在线服务</small></h3>
+      <p>面向小模型的多智能体运行时。用多智能体调度、任务分层与 harness 设计补足小模型的能力短板，承担量大、模式重复、复杂度中等的任务——补的是强模型单智能体 harness 覆盖不到的那一段。</p>
     </div>
     <div class="links">
-      <a href="#">在线试用 <span class="badge">开发中</span></a>
+      <a href="try-bb6.html">在线试用 <span class="badge">开发中</span></a>
       <a href="https://github.com/ProfYangShengXu/bobanana6">GitHub ↗</a>
     </div>
   </div>
 
-  <div class="item reveal" onclick="location.href=&#39;contactor.html&#39;" style="cursor:pointer" onclick="location.href='contactor.html'" style="cursor:pointer">
+  <div class="item reveal" data-page="contactor.html">
     <div>
-      <h3><a href="contactor.html" style="color:inherit;text-decoration:none">contactor</a><small>A2A BRIDGE · 开源</small></h3>
-      <p>让本机多个 agent 进程互相发现、互相委托的 JSON-RPC 桥。把 ACP 翻译成 A2A，补上协议没设计的发现、对等委托与跨进程互找三件事。</p>
+      <h3><a href="contactor.html">contactor</a><small>A2A BRIDGE · 开源</small></h3>
+      <p>让本机多个智能体进程互相发现、互相委托的协议桥。把 ACP 翻译成 A2A，补上协议没设计的发现、对等委托与跨进程互找三件事。</p>
     </div>
     <div class="links">
       <a href="https://github.com/ProfYangShengXu/contactor">GitHub ↗</a>
+      <a href="contactor.html">接入指南 ↗</a>
     </div>
   </div>
 
-  <div class="item reveal" onclick="location.href=&#39;forage.html&#39;" style="cursor:pointer" onclick="location.href='forage.html'" style="cursor:pointer">
+  <div class="item reveal" data-page="forage.html">
     <div>
-      <h3><a href="forage.html" style="color:inherit;text-decoration:none">forage</a><small>DATA ACQUISITION · 开源</small></h3>
-      <p>视觉推理的数据管线：测量层与决策层分离，检测走专用模型、测量走分割，判据不用 top-1 而用归一化名次，避免单一指标锁死判分。</p>
+      <h3><a href="forage.html">forage</a><small>TECHNICAL RETRIEVAL · 开源</small></h3>
+      <p>技术文档爬虫与中文改写召回。中文提问展开成多路英文检索，加权融合后返回带出处的原文段落，并支持解释「这条为什么排在前面」。</p>
     </div>
     <div class="links">
       <a href="https://github.com/ProfYangShengXu/forage">GitHub ↗</a>
+      <a href="forage.html">接入指南 ↗</a>
     </div>
   </div>
 
-  <div class="item reveal" onclick="location.href=&#39;memory-bridge.html&#39;" style="cursor:pointer" onclick="location.href='memory-bridge.html'" style="cursor:pointer">
+  <div class="item reveal" data-page="memory-bridge.html">
     <div>
-      <h3><a href="memory-bridge.html" style="color:inherit;text-decoration:none">memory-bridge</a><small>MEMORY LAYER · 开源</small></h3>
-      <p>给 agent 用的记忆层：把对话与经验沉淀成可检索的长期记忆，并在需要时按上下文取回。带评测集，可以对比不同检索策略的效果。</p>
+      <h3><a href="memory-bridge.html">memory-bridge</a><small>MEMORY LAYER · 开源</small></h3>
+      <p>给智能体使用的长期记忆层。把会话中值得保留的内容沉淀下来，并在新上下文中按相关性取回，附带评测集以便对比不同检索策略。</p>
     </div>
     <div class="links">
-      <a href="memory-bridge.html">接入指南 ↗</a>
       <a href="https://github.com/ProfYangShengXu/memory-bridge">GitHub ↗</a>
+      <a href="memory-bridge.html">接入指南 ↗</a>
     </div>
   </div>
 
-  <div class="item reveal" onclick="location.href=&#39;collage.html&#39;" style="cursor:pointer" onclick="location.href='collage.html'" style="cursor:pointer">
+  <div class="item reveal" data-page="collage.html">
     <div>
-      <h3><a href="collage.html" style="color:inherit;text-decoration:none">collage</a><small>TYPOGRAPHIC ENGINE · 客户端下载</small></h3>
-      <p>把文字排进任意形状的拼贴引擎。四叉树驱动布局，让字形本身成为画面的密度与节奏。</p>
+      <h3><a href="collage.html">collage</a><small>TYPOGRAPHIC ENGINE · 在线服务</small></h3>
+      <p>把一段文字排进任意形状的排版引擎。四叉树驱动布局，让字形本身成为画面的密度与节奏。</p>
     </div>
     <div class="links">
-      <a href="#">在线试用 <span class="badge">开发中</span></a>
-      <a href="#">下载 <span class="badge">开发中</span></a>
+      <a href="try-collage.html">在线试用 <span class="badge">开发中</span></a>
       <a href="https://github.com/ProfYangShengXu/collage">GitHub ↗</a>
     </div>
   </div>
 
-  <div class="item reveal" onclick="location.href=&#39;analesthetics.html&#39;" style="cursor:pointer" onclick="location.href='analesthetics.html'" style="cursor:pointer">
+  <div class="item reveal" data-page="analesthetics.html">
     <div>
-      <h3><a href="analesthetics.html" style="color:inherit;text-decoration:none">analesthetics</a><small>DRAWING DIAGNOSTICS · 在线服务</small></h3>
-      <p>用计算机视觉给画作出读数，再用多模态模型补上型准判断。可解释性分三层：数字 → 脚本生成的证据卡 → 模型综合，避免模型自己编证据。</p>
+      <h3><a href="analesthetics.html">analesthetics</a><small>DRAWING DIAGNOSTICS · 在线服务</small></h3>
+      <p>把绘画质量拆成可以测量的量。用计算机视觉出二十三项读数，每条都带区域与算法出处，再让模型只能引用读数做解释。</p>
     </div>
     <div class="links">
-      <a href="#">报告示例 ↗</a>
+      <a href="try-analesthetics.html">在线试用 <span class="badge">开发中</span></a>
+      <a href="https://github.com/ProfYangShengXu/analesthetics">GitHub ↗</a>
     </div>
+  </div>
   </div>
 </section>
 
@@ -328,6 +335,16 @@ footer{padding:13vh 0 9vh;border-top:1px solid var(--line)}
   els.forEach(function(e){ io.observe(e) });
   setTimeout(showAll, 1500);
 })();
+</script>
+
+
+<script>
+document.querySelectorAll('.item[data-page]').forEach(function(el){
+  el.addEventListener('click', function(ev){
+    if(ev.target.closest('a')) return;      // 点到卡片里的链接时，走链接自己
+    location.href = el.dataset.page;
+  });
+});
 </script>
 
 </body>
