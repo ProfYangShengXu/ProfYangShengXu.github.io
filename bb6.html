@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bobanana6 — 陈霆钧</title>
+<meta name="description" content="面向小模型的多智能体运行时。用多智能体调度、任务分层与 harness 设计补足小模型的能力短板，承担大批量、中等复杂度的任务。">
+<meta property="og:title" content="bobanana6 — Small-model Multi-Agent Harness">
+<meta property="og:description" content="用调度与分层补足小模型的智力短板，承担大批量中等复杂度任务。">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --bg:#0b0b0c; --ink:#f2ede3; --dim:rgba(242,237,227,.56);
+  --faint:rgba(242,237,227,.34); --line:rgba(242,237,227,.14);
+  --acid:#d6ff2e;
+  --serif:"Songti SC","Noto Serif CJK SC","Source Han Serif SC","SimSun",serif;
+  --sans:"PingFang SC","HarmonyOS Sans SC","MiSans","Microsoft YaHei",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+     -webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(214,255,46,.05),transparent 70%)}
+::selection{background:var(--acid);color:#0b0b0c}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+.wrap.narrow{max-width:800px}
+
+/* 渐进增强：默认可见。只有 html.js 存在（脚本已运行）才隐藏等待揭示。
+   这样即使 JS 报错 / 被禁用 / IntersectionObserver 不支持，内容也不会消失。 */
+.reveal{opacity:1;transform:none}
+html.js .reveal{opacity:0;transform:translateY(26px);
+                transition:opacity .9s ease,transform .9s ease}
+html.js .reveal.on{opacity:1;transform:none}
+html.js .reveal.d1{transition-delay:.12s}
+html.js .reveal.d2{transition-delay:.24s}
+html.js .reveal.d3{transition-delay:.36s}
+
+nav{position:sticky;top:0;z-index:50;background:rgba(11,11,12,.78);
+    backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;height:60px}
+.brand{font-family:var(--serif);font-weight:900;font-size:15px;letter-spacing:.14em;
+       text-decoration:none;color:var(--ink)}
+.brand i{font-style:normal;color:var(--acid)}
+.brand small{font-family:var(--mono);font-weight:400;font-size:10.5px;
+             letter-spacing:.16em;color:var(--dim);margin-left:12px}
+nav ul{display:flex;gap:30px;list-style:none}
+nav a{font-size:12.5px;letter-spacing:.16em;color:var(--dim);text-decoration:none;
+      transition:color .25s}
+nav a:hover,nav a.on{color:var(--ink)}
+
+/* ── 详情页 ── */
+.ph{padding-top:11vh;padding-bottom:7vh;border-bottom:1px solid var(--line)}
+.crumb{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;
+       color:var(--dim);text-decoration:none;transition:color .25s}
+.crumb:hover{color:var(--acid)}
+.ph h1{font-family:var(--serif);font-weight:900;line-height:1.16;letter-spacing:.01em;
+       font-size:clamp(2.3rem,5.6vw,4.4rem);margin:28px 0 0}
+.ph h1 em{font-style:normal;color:var(--acid)}
+.ph .kind{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;
+          color:var(--acid);text-transform:uppercase;margin-top:26px;display:block}
+.ph .lede{margin-top:22px;max-width:36em;color:var(--dim);font-size:16px;line-height:1.95}
+
+/* 行动区：在线服务 / 下载 / 代码 */
+.acts{display:flex;flex-wrap:wrap;gap:12px;margin-top:44px}
+.act{display:inline-flex;align-items:center;gap:9px;padding:14px 26px;
+     font-size:13.5px;letter-spacing:.05em;text-decoration:none;
+     border:1px solid var(--faint);color:var(--ink);transition:all .28s}
+.act:hover{background:var(--acid);color:#0b0b0c;border-color:var(--acid)}
+.act.ghost{border-color:var(--line);color:var(--dim)}
+.act.ghost:hover{background:transparent;color:var(--ink);border-color:var(--faint)}
+.act small{font-family:var(--mono);font-size:10px;letter-spacing:.1em;opacity:.65}
+
+section{padding-top:9vh;padding-bottom:9vh}
+.sec-h{font-family:var(--serif);font-weight:900;letter-spacing:.03em;
+       font-size:clamp(1.4rem,2.8vw,2rem);margin-bottom:36px;
+       padding-bottom:18px;border-bottom:1px solid var(--line)}
+.body-t p{font-size:15.5px;line-height:2.05;color:rgba(242,237,227,.82);margin-bottom:24px}
+.body-t strong{color:var(--ink);font-weight:600}
+.body-t em{font-style:normal;color:var(--acid)}
+
+/* 规格表 */
+.spec{list-style:none}
+.spec li{display:grid;grid-template-columns:150px 1fr;gap:24px;
+         padding:14px 0;border-bottom:1px solid var(--line);font-size:14px}
+.spec dt,.spec .k{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;
+                  color:var(--dim);padding-top:2px}
+.spec .v{color:rgba(242,237,227,.86);line-height:1.7}
+
+/* 三步 / 特性 */
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line)}
+.feat{padding:30px 26px 30px 0;border-right:1px solid var(--line)}
+.feat:last-child{border-right:none}
+.feat .n{font-family:var(--mono);font-size:11px;color:var(--acid);
+         letter-spacing:.16em;margin-bottom:16px}
+.feat h3{font-family:var(--serif);font-weight:700;font-size:1.15rem;
+         letter-spacing:.03em;margin-bottom:10px}
+.feat p{font-size:13.5px;line-height:1.8;color:var(--dim)}
+
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.9;
+    background:rgba(242,237,227,.035);border:1px solid var(--line);
+    padding:22px 24px;overflow-x:auto;margin:24px 0;color:rgba(242,237,227,.8)}
+pre b{color:var(--acid);font-weight:400}
+
+.note{font-size:13px;line-height:1.85;color:var(--dim);
+      border-left:2px solid var(--acid);padding-left:20px;margin:28px 0}
+
+.pager{display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px;
+       padding:44px 0 0;border-top:1px solid var(--line);margin-top:6vh}
+.pager a{font-family:var(--mono);font-size:12px;letter-spacing:.1em;
+         color:var(--dim);text-decoration:none;transition:color .25s}
+.pager a:hover{color:var(--acid)}
+
+footer{border-top:1px solid var(--line);padding:52px 0;margin-top:10vh}
+.colophon{font-family:var(--mono);font-size:10.5px;color:#3d3d42;
+          letter-spacing:.12em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
+
+@media(max-width:880px){
+  .feats{grid-template-columns:1fr}
+  .feat{border-right:none;border-bottom:1px solid var(--line);padding-right:0}
+  .spec li{grid-template-columns:110px 1fr;gap:16px}
+  .reveal{transition-duration:.55s}
+}
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  html{scroll-behavior:auto}
+}
+
+
+.ov{margin-bottom:40px}
+.ov h3{font-family:var(--serif);font-weight:700;font-size:1.02rem;
+       letter-spacing:.12em;color:var(--acid);margin-bottom:14px}
+.ov p{font-size:15.5px;line-height:2.05;color:rgba(242,237,227,.82)}
+.ov p+p{margin-top:16px}
+.ov strong{color:var(--ink);font-weight:600}
+.ov em{font-style:normal;color:var(--acid)}
+.ov ul{list-style:none;margin:18px 0 0}
+.ov li{position:relative;padding-left:22px;margin-bottom:14px;
+       font-size:15px;line-height:1.95;color:rgba(242,237,227,.82)}
+.ov li::before{content:"";position:absolute;left:0;top:.72em;width:8px;height:1px;
+               background:var(--acid)}
+
+/* 对比表 */
+.cmp{width:100%;border-collapse:collapse;margin:24px 0 6px;font-size:14px}
+.cmp th,.cmp td{border-bottom:1px solid var(--line);padding:15px 14px;text-align:left;
+                vertical-align:top}
+.cmp th{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+        color:var(--dim);font-weight:400}
+.cmp td{color:rgba(242,237,227,.82);line-height:1.7}
+.cmp td.k{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;color:var(--dim);
+          width:130px}
+.cmp td.hl{color:var(--acid)}
+
+.pending{border:1px dashed var(--line);padding:30px 32px;margin-top:8px}
+.pending p{font-size:14px;line-height:1.9;color:var(--dim)}
+.pending p+p{margin-top:12px}
+.pending b{color:var(--ink);font-weight:500}
+
+
+.badge{display:inline-block;font-family:var(--mono);font-size:9.5px;
+       letter-spacing:.14em;color:var(--acid);border:1px solid rgba(214,255,46,.35);
+       padding:2px 7px;margin-left:9px;vertical-align:middle;white-space:nowrap}
+.wipbar{border:1px solid rgba(214,255,46,.28);
+        background:rgba(214,255,46,.05);
+        padding:14px 20px;margin:0 auto 0;max-width:800px;
+        font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
+        color:rgba(242,237,227,.7);text-align:center}
+.wipbar b{color:var(--acid);font-weight:400}
+
+</style>
+</head>
+<body>
+<nav>
+  <div class="wrap">
+    <a href="index.html" class="brand">陈霆钧<i>.</i><small>朝天椒</small></a>
+    <ul>
+      <li><a href="index.html#work">作品</a></li>
+      <li><a href="blog.html">博客</a></li>
+      <li><a href="index.html#about">关于</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="ph wrap">
+  <a class="crumb reveal on" href="index.html#work">← 全部作品</a>
+  <h1 class="reveal on">bobanana6</h1>
+  <span class="kind reveal d1">Small-model Multi-Agent Harness</span>
+  <p class="lede reveal d1">
+    面向小模型的多智能体运行时。用调度、分层与 harness 设计补足小模型的能力短板，
+    承担大批量、中等复杂度的任务。
+  </p>
+  <div class="acts reveal d2">
+    <a class="act" href="try-bb6.html">在线试用<small>SERVICE</small></a>
+    <a class="act ghost" href="#">下载 zip<span class="badge">开发中</span><small>DOWNLOAD</small></a>
+    <a class="act ghost" href="https://github.com/ProfYangShengXu">GitHub<small>SOURCE</small></a>
+  </div>
+</header>
+
+<section class="wrap narrow">
+  <div class="ov reveal d1"><h3>是什么</h3>
+  <p>一个以小模型为核心的多智能体运行时。它不试图让单个模型变强，
+  而是把任务拆开、分层、分派，让多个小模型协作完成一件本来需要强模型才能做完的事。</p></div>
+
+  <div class="ov reveal d1"><h3>做什么</h3>
+  <p>接收批量任务，将其解析为结构化契约，按依赖切分后分派给多个智能体执行，
+  并逐块判定产物是否达标。适合处理<strong>重复量大、但单个任务复杂度中等</strong>的工作 ——
+  这类任务用强模型成本过高，用单次调用的小模型又难以保证质量。</p></div>
+
+  <div class="ov reveal d1"><h3>为什么这么做</h3>
+  <p>现在主流的 agent harness 基本都以强模型单智能体为中心：一个足够强的模型加一套工具，
+  能力上限很高，但代价是每次调用的成本也高。这类设计在复杂、长尾、需要判断力的任务上是对的，
+  可它并不适合另一类工作 —— 数量大、模式重复、单件难度不高、但要的是稳定产出。</p>
+  <p>小模型在单次调用下确实做不好这类任务，问题通常不在知识量，而在<em>一次要它同时兼顾的事太多</em>：
+  既要覆盖全，又要结构对，还要质量稳。强度不够时，它会漏、会偏、会在细节上塌陷。</p>
+  <p>bb6 的思路是<strong>不要求模型一次做对所有事</strong>：</p>
+  <ul>
+    <li><b>任务分层</b> —— 把一次大判断拆成若干小判断，每一层只让模型面对它能胜任的复杂度。</li>
+    <li><b>多智能体调度</b> —— 由运行时负责分工、串接与回收，而不是让一个模型在上下文里独自记住全部约束。</li>
+    <li><b>harness 承担约束</b> —— 该由代码保证的东西（覆盖、格式、依赖顺序、失败判定）不交给模型去自觉遵守。</li>
+  </ul>
+  <p>换言之：<em>用系统设计补足模型智力，而不是靠提示词要求它表现得更聪明。</em></p></div>
+
+  <div class="ov reveal d1"><h3>和主流 harness 的关系</h3>
+  <p>不是替代关系，是补位关系。</p>
+  <table class="cmp">
+    <tr><th></th><th>强模型单智能体 harness</th><th>bb6</th></tr>
+    <tr><td class="k">核心模型</td><td>强模型</td><td class="hl">小模型（4B 级）</td></tr>
+    <tr><td class="k">擅长</td><td>复杂、长尾、需要判断的任务</td><td class="hl">量大、模式重复、复杂度中等的任务</td></tr>
+    <tr><td class="k">单次成本</td><td>高</td><td class="hl">低</td></tr>
+    <tr><td class="k">能力来源</td><td>模型本身</td><td class="hl">调度 + 分层 + harness 设计</td></tr>
+    <tr><td class="k">失败形态</td><td>偶发但难定位</td><td class="hl">逐块具名，指出哪一块没过</td></tr>
+  </table>
+  <p>两者面向的是不同的任务分布。选哪一个，取决于任务量大不大、单件难不难、以及能不能接受按次数计费。</p></div>
+</section>
+
+<section class="wrap narrow">
+  <h2 class="sec-h reveal">评测</h2>
+  <div class="pending reveal d1">
+    <p><b>对小模型场景下的横向评测正在进行。</b>目标是回答一个问题：
+    在同一批任务、同一个 4B 级模型下，本系统相对其他 agent harness 的表现差异有多大。</p>
+    <p>评测集包括 JD 信息采集、代码任务等需要大量重复执行的任务族，
+    每组跑足够多次以区分真实差异与随机波动。数据量与质量达标后会在这里公布读数。</p>
+    <p style="color:rgba(242,237,227,.34)">在此之前不放单次案例 —— 单个案例说明不了系统，
+    反而容易把偶然当结论。</p>
+  </div>
+</section>
+
+<section class="wrap narrow">
+  <h2 class="sec-h reveal">规格</h2>
+  <ul class="spec reveal d1">
+    <li><span class="k">语言</span><span class="v">Python</span></li>
+    <li><span class="k">形态</span><span class="v">CLI · TUI · 服务</span></li>
+    <li><span class="k">目标模型</span><span class="v">4B 级小模型</span></li>
+    <li><span class="k">核心机制</span><span class="v">任务分层 · 多智能体调度 · 契约校验 · 逐块判定</span></li>
+    <li><span class="k">许可</span><span class="v">MIT</span></li>
+  </ul>
+  <div class="pager reveal d2">
+    <a href="index.html#work">← 全部作品</a>
+    <a href="index.html#contact">联系 →</a>
+  </div>
+</section>
+
+<footer><div class="wrap colophon">
+  <span>陈霆钧 · 朝天椒 · 2026</span>
+  <span>HTML / CSS — no framework, no tracking</span>
+</div></footer>
+<script>
+(function(){
+  document.documentElement.classList.add('js');
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  function showAll(){ els.forEach(function(e){e.classList.add('on')}); }
+  if(!('IntersectionObserver' in window)){ showAll(); return; }
+  var io=new IntersectionObserver(function(en){
+    en.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target);} });
+  },{threshold:0.05,rootMargin:'0px 0px -2% 0px'});
+  els.forEach(function(e){ io.observe(e) });
+  setTimeout(showAll, 1500);
+})();
+</script>
+</body>
+</html>

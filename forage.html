@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>forage — 陈霆钧</title>
+<meta name="description" content="技术文档爬虫与中文改写召回：中文 query 展开成多路英文检索，加权 RRF 融合后返回父块，并支持 explain 与评测。">
+<meta property="og:title" content="forage — Data Retrieval">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --bg:#0b0b0c; --ink:#f2ede3; --dim:rgba(242,237,227,.56);
+  --faint:rgba(242,237,227,.34); --line:rgba(242,237,227,.14);
+  --acid:#d6ff2e;
+  --serif:"Songti SC","Noto Serif CJK SC","Source Han Serif SC","SimSun",serif;
+  --sans:"PingFang SC","HarmonyOS Sans SC","MiSans","Microsoft YaHei",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+     -webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(214,255,46,.05),transparent 70%)}
+::selection{background:var(--acid);color:#0b0b0c}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+.wrap.narrow{max-width:800px}
+
+/* 渐进增强：默认可见。只有 html.js 存在（脚本已运行）才隐藏等待揭示。
+   这样即使 JS 报错 / 被禁用 / IntersectionObserver 不支持，内容也不会消失。 */
+.reveal{opacity:1;transform:none}
+html.js .reveal{opacity:0;transform:translateY(26px);
+                transition:opacity .9s ease,transform .9s ease}
+html.js .reveal.on{opacity:1;transform:none}
+html.js .reveal.d1{transition-delay:.12s}
+html.js .reveal.d2{transition-delay:.24s}
+html.js .reveal.d3{transition-delay:.36s}
+
+nav{position:sticky;top:0;z-index:50;background:rgba(11,11,12,.78);
+    backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;height:60px}
+.brand{font-family:var(--serif);font-weight:900;font-size:15px;letter-spacing:.14em;
+       text-decoration:none;color:var(--ink)}
+.brand i{font-style:normal;color:var(--acid)}
+.brand small{font-family:var(--mono);font-weight:400;font-size:10.5px;
+             letter-spacing:.16em;color:var(--dim);margin-left:12px}
+nav ul{display:flex;gap:30px;list-style:none}
+nav a{font-size:12.5px;letter-spacing:.16em;color:var(--dim);text-decoration:none;
+      transition:color .25s}
+nav a:hover,nav a.on{color:var(--ink)}
+
+/* ── 详情页 ── */
+.ph{padding-top:11vh;padding-bottom:7vh;border-bottom:1px solid var(--line)}
+.crumb{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;
+       color:var(--dim);text-decoration:none;transition:color .25s}
+.crumb:hover{color:var(--acid)}
+.ph h1{font-family:var(--serif);font-weight:900;line-height:1.16;letter-spacing:.01em;
+       font-size:clamp(2.3rem,5.6vw,4.4rem);margin:28px 0 0}
+.ph h1 em{font-style:normal;color:var(--acid)}
+.ph .kind{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;
+          color:var(--acid);text-transform:uppercase;margin-top:26px;display:block}
+.ph .lede{margin-top:22px;max-width:36em;color:var(--dim);font-size:16px;line-height:1.95}
+
+/* 行动区：在线服务 / 下载 / 代码 */
+.acts{display:flex;flex-wrap:wrap;gap:12px;margin-top:44px}
+.act{display:inline-flex;align-items:center;gap:9px;padding:14px 26px;
+     font-size:13.5px;letter-spacing:.05em;text-decoration:none;
+     border:1px solid var(--faint);color:var(--ink);transition:all .28s}
+.act:hover{background:var(--acid);color:#0b0b0c;border-color:var(--acid)}
+.act.ghost{border-color:var(--line);color:var(--dim)}
+.act.ghost:hover{background:transparent;color:var(--ink);border-color:var(--faint)}
+.act small{font-family:var(--mono);font-size:10px;letter-spacing:.1em;opacity:.65}
+
+section{padding-top:9vh;padding-bottom:9vh}
+.sec-h{font-family:var(--serif);font-weight:900;letter-spacing:.03em;
+       font-size:clamp(1.4rem,2.8vw,2rem);margin-bottom:36px;
+       padding-bottom:18px;border-bottom:1px solid var(--line)}
+.body-t p{font-size:15.5px;line-height:2.05;color:rgba(242,237,227,.82);margin-bottom:24px}
+.body-t strong{color:var(--ink);font-weight:600}
+.body-t em{font-style:normal;color:var(--acid)}
+
+/* 规格表 */
+.spec{list-style:none}
+.spec li{display:grid;grid-template-columns:150px 1fr;gap:24px;
+         padding:14px 0;border-bottom:1px solid var(--line);font-size:14px}
+.spec dt,.spec .k{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;
+                  color:var(--dim);padding-top:2px}
+.spec .v{color:rgba(242,237,227,.86);line-height:1.7}
+
+/* 三步 / 特性 */
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line)}
+.feat{padding:30px 26px 30px 0;border-right:1px solid var(--line)}
+.feat:last-child{border-right:none}
+.feat .n{font-family:var(--mono);font-size:11px;color:var(--acid);
+         letter-spacing:.16em;margin-bottom:16px}
+.feat h3{font-family:var(--serif);font-weight:700;font-size:1.15rem;
+         letter-spacing:.03em;margin-bottom:10px}
+.feat p{font-size:13.5px;line-height:1.8;color:var(--dim)}
+
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.9;
+    background:rgba(242,237,227,.035);border:1px solid var(--line);
+    padding:22px 24px;overflow-x:auto;margin:24px 0;color:rgba(242,237,227,.8)}
+pre b{color:var(--acid);font-weight:400}
+
+.note{font-size:13px;line-height:1.85;color:var(--dim);
+      border-left:2px solid var(--acid);padding-left:20px;margin:28px 0}
+
+.pager{display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px;
+       padding:44px 0 0;border-top:1px solid var(--line);margin-top:6vh}
+.pager a{font-family:var(--mono);font-size:12px;letter-spacing:.1em;
+         color:var(--dim);text-decoration:none;transition:color .25s}
+.pager a:hover{color:var(--acid)}
+
+footer{border-top:1px solid var(--line);padding:52px 0;margin-top:10vh}
+.colophon{font-family:var(--mono);font-size:10.5px;color:#3d3d42;
+          letter-spacing:.12em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
+
+@media(max-width:880px){
+  .feats{grid-template-columns:1fr}
+  .feat{border-right:none;border-bottom:1px solid var(--line);padding-right:0}
+  .spec li{grid-template-columns:110px 1fr;gap:16px}
+  .reveal{transition-duration:.55s}
+}
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  html{scroll-behavior:auto}
+}
+
+
+.badge{display:inline-block;font-family:var(--mono);font-size:9.5px;
+       letter-spacing:.14em;color:var(--acid);border:1px solid rgba(214,255,46,.35);
+       padding:2px 7px;margin-left:9px;vertical-align:middle;white-space:nowrap}
+.wipbar{border:1px solid rgba(214,255,46,.28);
+        background:rgba(214,255,46,.05);
+        padding:14px 20px;margin:0 auto 0;max-width:800px;
+        font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
+        color:rgba(242,237,227,.7);text-align:center}
+.wipbar b{color:var(--acid);font-weight:400}
+
+</style>
+<style>
+.ov{margin-bottom:42px}
+.ov h3{font-family:var(--serif);font-weight:700;font-size:1.02rem;
+       letter-spacing:.12em;color:var(--acid);margin-bottom:14px}
+.ov p{font-size:15.5px;line-height:2.05;color:rgba(242,237,227,.82)}
+.ov p+p{margin-top:16px}
+.ov strong{color:var(--ink);font-weight:600}
+.case{border:1px solid var(--line);padding:32px 34px;margin-bottom:26px;background:rgba(242,237,227,.02)}
+.case-h{display:flex;justify-content:space-between;align-items:baseline;gap:18px;
+        flex-wrap:wrap;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.case-h b{font-family:var(--serif);font-weight:700;font-size:1.1rem;letter-spacing:.03em}
+.case-h span{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--dim)}
+.case p{font-size:14.5px;line-height:1.95;color:var(--dim)}
+.case em{font-style:normal;color:var(--acid)}
+.chain{font-family:var(--mono);font-size:12.5px;line-height:2.1;color:rgba(242,237,227,.75);
+       border-left:2px solid var(--acid);padding-left:20px;margin:20px 0}
+.chain b{color:var(--acid);font-weight:400}
+</style>
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+<nav>
+  <div class="wrap">
+    <a href="index.html" class="brand">陈霆钧<i>.</i><small>朝天椒</small></a>
+    <ul>
+      <li><a href="index.html#work">作品</a></li>
+      <li><a href="blog.html">博客</a></li>
+      <li><a href="index.html#about">关于</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="ph wrap">
+  <a class="crumb reveal on" href="index.html#work">← 全部作品</a>
+  <h1 class="reveal on">forage</h1>
+  <span class="kind reveal d1">Technical Retrieval</span>
+  <p class="lede reveal d1">
+    技术文档爬虫与中文改写召回。中文 query 展开成多路英文检索，加权融合后返回带出处的父块。
+  </p>
+  <div class="acts reveal d2">
+    <a class="act" href="https://github.com/ProfYangShengXu">GitHub<small>SOURCE</small></a>
+  </div>
+</header>
+
+<section class="wrap narrow">
+  <div class="ov reveal d1"><h3>是什么</h3>
+  <p>一个面向技术博客的检索层。它负责两件事：把技术博客的内容增量抓取入库；
+  把中文提问扩展成多路英文检索，融合后返回最相关的原文段落。</p></div>
+
+  <div class="ov reveal d1"><h3>做什么</h3>
+  <p>爬取官方 feed/API 拿到文章正文并入库（内容未变则跳过向量计算）；
+  对中文 query 做改写扩展，走多路检索并用加权 RRF 融合，返回父块原文；
+  支持 <code>explain</code> 回答「这条为什么排在前面 / 那条为什么没进来」；
+  支持在冻结的标注集上量 Recall / MRR / NDCG。</p></div>
+
+  <div class="ov reveal d1"><h3>为什么这么做</h3>
+  <p>中文的检索需求和技术博客的英文原文之间存在词面鸿沟 —— 用中文直接检索英文语料，
+  词面匹配基本失效，纯向量检索又容易在专有名词上翻车。所以把中文 query 改写成多路英文表达，
+  每一路各自检索，再用 RRF 做无监督融合：不依赖任何一路的打分校准，只看名次。</p>
+  <p>另一个决定是<strong>不自己做检索层</strong>，直接复用已有的记忆层（BM25 + 向量 + 精排 + 父子块）。
+  检索这块已经被反复验证过，重复实现只会得到两个都需要维护的版本。
+  forage 只做增量的事：爬虫、改写、可解释、可评测。</p>
+  <p>边界也划得很清楚：<em>负责把相关段落找出来，不负责判断这些段落该不该采信</em>。
+  生成和判断交给上层调用它的 agent —— 检索层的职责越单一，替换和评测越容易。</p></div>
+</section>
+
+<section class="wrap narrow">
+  <h2 class="sec-h reveal">案例</h2>
+
+  <div class="case reveal d1">
+    <div class="case-h"><b>中文提问召回英文原文</b><span>多路改写 + 加权 RRF</span></div>
+    <p>用中文提一个技术问题，系统不直接检索，而是先展开成若干条英文表达：</p>
+    <div class="chain">
+      中文 query<br>
+      &nbsp;&nbsp;↓ 多路改写<br>
+      <b>path 1</b> 原 query（阻尼）<br>
+      <b>path 2..n</b> 英文改写表达<br>
+      &nbsp;&nbsp;↓ 各路独立检索 + 加权 RRF 融合<br>
+      <b>父块原文</b>（带来源、带时间）
+    </div>
+    <p>融合不用分数而用名次，是为了避开不同检索路径分值尺度不一致的问题 ——
+    向量相似度和 BM25 分数本来就没有可比性。名次融合不需要校准，也不怕某一路失效。</p>
+  </div>
+
+  <div class="case reveal d1">
+    <div class="case-h"><b>为什么它没进来</b><span>explain 子命令</span></div>
+    <p>检索系统最难调试的地方不是"结果不好"，而是"不知道为什么不 good"。
+    所以提供 <code>explain</code>：给一个 query 和一个文档名，回答这篇为什么排在当前位次、
+    或者为什么根本没能进入结果集。</p>
+    <p>这一条是把检索从「调参数试运气」变成「可以定位问题」的关键。</p>
+  </div>
+</section>
+
+<section class="wrap narrow">
+  <h2 class="sec-h reveal">规格</h2>
+  <ul class="spec reveal d1">
+    <li><span class="k">语言</span><span class="v">Python</span></li>
+    <li><span class="k">形态</span><span class="v">库 · 命令行 · skill</span></li>
+    <li><span class="k">检索</span><span class="v">BM25 + 向量 + 精排 + 父子块 · 加权 RRF 融合</span></li>
+    <li><span class="k">评测</span><span class="v">冻结标注集 · Recall / MRR / NDCG</span></li>
+    <li><span class="k">许可</span><span class="v">MIT</span></li>
+  </ul>
+  <div class="pager reveal d2">
+    <a href="index.html#work">← 全部作品</a>
+    <a href="index.html#contact">联系 →</a>
+  </div>
+</section>
+
+<footer><div class="wrap colophon">
+  <span>陈霆钧 · 朝天椒 · 2026</span>
+  <span>HTML / CSS — no framework, no tracking</span>
+</div></footer>
+<script>
+(function(){
+  document.documentElement.classList.add('js');
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  function showAll(){ els.forEach(function(e){e.classList.add('on')}); }
+  if(!('IntersectionObserver' in window)){ showAll(); return; }
+  var io=new IntersectionObserver(function(en){
+    en.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target);} });
+  },{threshold:0.05,rootMargin:'0px 0px -2% 0px'});
+  els.forEach(function(e){ io.observe(e) });
+  // 兜底：1.5s 后强制全部可见，防止任何边界情况导致内容不可见
+  setTimeout(showAll, 1500);
+})();
+</script>
+</body>
+</html>

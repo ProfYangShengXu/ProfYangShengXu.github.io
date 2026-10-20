@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陈霆钧 — Agent Systems</title>
+<meta name="description" content="把长任务切成块交给多个 agent，再逐块核对产物是否真的合格。做不到就具名失败，不静默通过。">
+<meta property="og:title" content="陈霆钧 — Agent Systems">
+<meta property="og:description" content="陈霆钧 — Agent Systems · Computer Vision｜香港中文大学（深圳）">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --bg:#0b0b0c;
+  --ink:#f2ede3;
+  --dim:rgba(242,237,227,.56);
+  --faint:rgba(242,237,227,.34);
+  --line:rgba(242,237,227,.14);
+  --acid:#d6ff2e;
+  --serif:"Songti SC","Noto Serif CJK SC","Source Han Serif SC","SimSun",serif;
+  --sans:"PingFang SC","HarmonyOS Sans SC","MiSans","Microsoft YaHei",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+     -webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(214,255,46,.05),transparent 70%)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+::selection{background:var(--acid);color:#0b0b0c}
+
+/* ── reveal ───────────────────────────── */
+.reveal{opacity:1;transform:none}
+html.js .reveal{opacity:0;transform:translateY(26px);transition:opacity .9s ease,transform .9s ease}
+html.js .reveal.on{opacity:1;transform:none}
+.reveal.d1{transition-delay:.12s}
+.reveal.d2{transition-delay:.24s}
+.reveal.d3{transition-delay:.36s}
+
+/* ── nav ──────────────────────────────── */
+nav{position:sticky;top:0;z-index:50;background:rgba(11,11,12,.78);
+    backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;height:60px}
+.brand{font-family:var(--serif);font-weight:900;font-size:15px;letter-spacing:.14em}
+.brand i{font-style:normal;color:var(--acid)}
+.brand small{font-family:var(--mono);font-weight:400;font-size:10.5px;
+             letter-spacing:.16em;color:var(--dim);margin-left:12px}
+nav ul{display:flex;gap:30px;list-style:none}
+nav a{font-size:12.5px;letter-spacing:.16em;color:var(--dim);text-decoration:none;
+      transition:color .25s}
+nav a:hover{color:var(--ink)}
+
+/* ── hero ─────────────────────────────── */
+.hero{padding:15vh 0 13vh;position:relative}
+h1{font-family:var(--serif);font-weight:900;
+   font-size:clamp(2.6rem,7.6vw,6rem);line-height:1.16;letter-spacing:.01em}
+h1 em{font-style:normal;color:var(--acid)}
+.hero-role{font-family:var(--mono);font-size:12.5px;letter-spacing:.18em;
+           text-transform:uppercase;color:var(--acid);margin-top:30px}
+.hero h1{font-size:clamp(3rem,8vw,6.4rem)}
+
+h1 .mono{font-family:var(--mono);font-weight:700;letter-spacing:-.02em;font-size:.86em}
+.hero-sub{margin-top:34px;max-width:34em;color:var(--dim);
+          font-size:clamp(15px,1.4vw,17px);line-height:1.85}
+.hero-sub code{font-family:var(--mono);color:var(--ink);font-size:.92em}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:46px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;
+     font-size:13.5px;letter-spacing:.06em;text-decoration:none;
+     border:1px solid var(--faint);color:var(--ink);transition:all .28s}
+.btn:hover{background:var(--acid);color:#0b0b0c;border-color:var(--acid)}
+.btn.ghost{border-color:var(--line);color:var(--dim)}
+.btn.ghost:hover{background:transparent;color:var(--ink);border-color:var(--faint)}
+
+/* ── meta strip ───────────────────────── */
+.meta{margin-top:72px;display:flex;flex-wrap:wrap;border-top:1px solid var(--line)}
+.meta div{flex:1 1 140px;padding:15px 0;border-right:1px solid var(--line)}
+.meta div:last-child{border-right:none}
+.meta dt{font-size:10.5px;letter-spacing:.18em;color:var(--dim)}
+.meta dd{font-family:var(--mono);font-size:13px;margin-top:7px;color:var(--ink)}
+
+/* ── section ──────────────────────────── */
+section{padding-top:12vh;padding-bottom:12vh}
+.sec-head{display:flex;align-items:baseline;gap:22px;margin-bottom:58px;
+          border-bottom:1px solid var(--line);padding-bottom:22px}
+.sec-title{font-family:var(--serif);font-weight:900;
+           font-size:clamp(1.7rem,3.6vw,2.6rem);letter-spacing:.03em}
+.sec-idx{font-family:var(--mono);font-size:12px;color:var(--acid);letter-spacing:.1em}
+
+/* ── work list ────────────────────────── */
+.item{display:grid;grid-template-columns:1fr 220px;gap:36px;
+      padding:38px 0;border-bottom:1px solid var(--line);
+      text-decoration:none;color:inherit;transition:padding-left .3s,border-color .3s}
+.item:hover{padding-left:14px;border-color:var(--faint)}
+.item h3{font-family:var(--serif);font-weight:700;
+         font-size:clamp(1.25rem,2.2vw,1.6rem);letter-spacing:.03em;margin-bottom:12px}
+.item h3 small{font-family:var(--mono);font-size:11px;color:var(--dim);
+               letter-spacing:.14em;margin-left:12px;font-weight:400}
+.item p{font-size:14px;line-height:1.85;color:var(--dim);max-width:52ch}
+.links{display:flex;flex-direction:column;gap:9px;justify-content:center}
+.links a{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;
+         color:var(--dim);text-decoration:none;transition:color .22s}
+.links a:hover{color:var(--acid)}
+
+/* ── method ───────────────────────────── */
+.method{display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+        border-top:1px solid var(--line)}
+.step{padding:38px 30px 38px 0;border-right:1px solid var(--line)}
+.step:last-child{border-right:none}
+.step-n{font-family:var(--mono);font-size:11px;color:var(--acid);
+        letter-spacing:.16em;margin-bottom:18px}
+.step h3{font-family:var(--serif);font-weight:700;font-size:clamp(1.1rem,1.9vw,1.4rem);
+         letter-spacing:.04em;margin-bottom:12px}
+.step p{font-size:13.5px;line-height:1.8;color:var(--dim)}
+
+/* ── about ────────────────────────────── */
+.about{display:grid;grid-template-columns:1fr 340px;gap:72px}
+.about p{font-size:15px;line-height:2;color:var(--dim)}
+.about p+p{margin-top:20px}
+.about strong{color:var(--ink);font-weight:500}
+.stack{list-style:none;font-family:var(--mono);font-size:12px}
+.stack li{display:flex;justify-content:space-between;padding:12px 0;
+          border-bottom:1px solid var(--line);color:var(--dim)}
+.stack li span:last-child{color:var(--ink)}
+
+/* ── footer ───────────────────────────── */
+footer{padding:13vh 0 9vh;border-top:1px solid var(--line)}
+.foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:40px;align-items:flex-end}
+.foot h2{font-family:var(--serif);font-weight:900;
+         font-size:clamp(1.7rem,4vw,3rem);line-height:1.3;letter-spacing:.02em}
+.foot h2 em{font-style:normal;color:var(--acid)}
+.flinks{display:flex;flex-direction:column;gap:14px;align-items:flex-end}
+.flinks a{font-family:var(--mono);font-size:12.5px;letter-spacing:.1em;color:var(--dim);
+          text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px;
+          transition:all .25s}
+.flinks a:hover{color:var(--acid);border-color:var(--acid)}
+.colophon{margin-top:64px;font-family:var(--mono);font-size:10.5px;color:#3d3d42;
+          letter-spacing:.12em;display:flex;justify-content:space-between;
+          flex-wrap:wrap;gap:14px}
+
+@media(max-width:880px){
+  section{padding-top:9vh;padding-bottom:9vh}
+  .hero{padding:11vh 0 9vh}
+  .reveal{transition-duration:.55s}
+  .item{grid-template-columns:1fr;gap:20px}
+  .links{flex-direction:row;gap:22px}
+  .method{grid-template-columns:1fr}
+  .step{border-right:none;border-bottom:1px solid var(--line);padding-right:0}
+  .about{grid-template-columns:1fr;gap:44px}
+  .meta div{flex:1 1 100%;border-right:none;border-bottom:1px solid var(--line)}
+  .foot{flex-direction:column;align-items:flex-start}
+  .flinks{align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  html{scroll-behavior:auto}
+}
+
+.badge{display:inline-block;font-family:var(--mono);font-size:9.5px;
+       letter-spacing:.14em;color:var(--acid);border:1px solid rgba(214,255,46,.35);
+       padding:2px 7px;margin-left:9px;vertical-align:middle;white-space:nowrap}
+.wipbar{border:1px solid rgba(214,255,46,.28);
+        background:rgba(214,255,46,.05);
+        padding:14px 20px;margin:0 auto 0;max-width:800px;
+        font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
+        color:rgba(242,237,227,.7);text-align:center}
+.wipbar b{color:var(--acid);font-weight:400}
+
+</style>
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">陈霆钧<i>.</i><small>朝天椒</small></div>
+    <ul>
+      <li><a href="#work">作品</a></li>
+      
+      <li><a href="blog.html">博客</a></li>
+      <li><a href="#about">关于</a></li>
+      <li><a href="#contact">联系</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero wrap">
+  <h1 class="reveal on">陈霆钧</h1>
+  <p class="hero-role reveal d1">Agent Systems · Computer Vision</p>
+  <p class="hero-sub reveal d1">
+    香港中文大学（深圳）本科生。研究方向为 agent 系统与计算机视觉，
+    关注任务分解、产物判定与多智能体协作中的可验证性问题。
+  </p>
+  <p class="hero-sub reveal d1">
+    目前在做多智能体任务分解运行时、智能体间通信协议桥，
+    以及绘画质量的量化评估；也做过数据库、计算机网络与嵌入式方向的项目。
+  </p>
+  <div class="cta-row reveal d2">
+    <a class="btn" href="#work">查看作品</a>
+    <a class="btn ghost" href="https://github.com/ProfYangShengXu">GitHub</a>
+    <a class="btn ghost" href="mailto:2601653334@qq.com">邮箱</a>
+  </div>
+  <dl class="meta reveal d3">
+    <div><dt>学校</dt><dd>香港中文大学（深圳）</dd></div>
+    <div><dt>方向</dt><dd>Agent Systems · CV</dd></div>
+    <div><dt>状态</dt><dd style="color:var(--acid)">求职中 · 2026.12</dd></div>
+    <div><dt>联系</dt><dd>2601653334@qq.com</dd></div>
+  </dl>
+</header>
+
+<section id="work" class="wrap">
+  <div class="sec-head reveal">
+    <span class="sec-idx">01</span>
+    <h2 class="sec-title">作品</h2>
+  </div>
+
+  <div class="item reveal">
+    <div>
+      <h3><a href="bb6.html" style="color:inherit;text-decoration:none">bobanana6</a><small>SMALL-MODEL MULTI-AGENT · 在线服务</small></h3>
+      <p>面向小模型的多智能体运行时。用多智能体调度、任务分层与 harness 设计补足小模型的能力短板，承担大批量、中等复杂度的任务 —— 补的是强模型单智能体 harness 覆盖不到的那一段。</p>
+    </div>
+    <div class="links">
+      <a href="#">在线试用 <span class="badge">开发中</span></a>
+      <a href="https://github.com/ProfYangShengXu">GitHub ↗</a>
+    </div>
+  </div>
+
+  <div class="item reveal">
+    <div>
+      <h3><a href="contactor.html" style="color:inherit;text-decoration:none">contactor</a><small>A2A BRIDGE · 开源</small></h3>
+      <p>让本机多个 agent 进程互相发现、互相委托的 JSON-RPC 桥。把 ACP 翻译成 A2A，补上协议没设计的发现、对等委托与跨进程互找三件事。</p>
+    </div>
+    <div class="links">
+      <a href="https://github.com/ProfYangShengXu">GitHub ↗</a>
+    </div>
+  </div>
+
+  <div class="item reveal">
+    <div>
+      <h3><a href="forage.html" style="color:inherit;text-decoration:none">forage</a><small>DATA ACQUISITION · 开源</small></h3>
+      <p>视觉推理的数据管线：测量层与决策层分离，检测走专用模型、测量走分割，判据不用 top-1 而用归一化名次，避免单一指标锁死判分。</p>
+    </div>
+    <div class="links">
+      <a href="https://github.com/ProfYangShengXu">GitHub ↗</a>
+    </div>
+  </div>
+
+  <div class="item reveal">
+    <div>
+      <h3><a href="memory-bridge.html" style="color:inherit;text-decoration:none">memory-bridge</a><small>MEMORY LAYER · 开源</small></h3>
+      <p>给 agent 用的记忆层：把对话与经验沉淀成可检索的长期记忆，并在需要时按上下文取回。带评测集，可以对比不同检索策略的效果。</p>
+    </div>
+    <div class="links">
+      <a href="memory-bridge.html">接入指南 ↗</a>
+      <a href="https://github.com/ProfYangShengXu">GitHub ↗</a>
+    </div>
+  </div>
+
+  <div class="item reveal">
+    <div>
+      <h3><a href="collage.html" style="color:inherit;text-decoration:none">collage</a><small>TYPOGRAPHIC ENGINE · 客户端下载</small></h3>
+      <p>把文字排进任意形状的拼贴引擎。四叉树驱动布局，让字形本身成为画面的密度与节奏。</p>
+    </div>
+    <div class="links">
+      <a href="#">在线试用 <span class="badge">开发中</span></a>
+      <a href="#">下载 <span class="badge">开发中</span></a>
+      <a href="https://github.com/ProfYangShengXu">GitHub ↗</a>
+    </div>
+  </div>
+
+  <div class="item reveal">
+    <div>
+      <h3><a href="analesthetics.html" style="color:inherit;text-decoration:none">analesthetics</a><small>DRAWING DIAGNOSTICS · 在线服务</small></h3>
+      <p>用计算机视觉给画作出读数，再用多模态模型补上型准判断。可解释性分三层：数字 → 脚本生成的证据卡 → 模型综合，避免模型自己编证据。</p>
+    </div>
+    <div class="links">
+      <a href="#">报告示例 ↗</a>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="wrap">
+  <div class="sec-head reveal">
+    <span class="sec-idx">03</span>
+    <h2 class="sec-title">关于</h2>
+  </div>
+  <div class="about">
+    <div class="reveal d1">
+      <p>香港中文大学（深圳）本科生，方向是 agent 系统与计算机视觉。</p>
+      <p>工程上主要做智能体的任务分解与产物判定：把长任务切成可验证的块，
+         让每一块的失败都能被明确指出，而不是含糊通过。</p>
+      <p>研究兴趣包括推理时计算、多智能体协作，以及视觉推理的数据管线。
+         除此之外也做排版与绘画，这两件事让我对「一个系统哪里不对」比「哪里对」更敏感。</p>
+    </div>
+    <ul class="stack reveal d2">
+      <li><span>LANG</span><span>Python · TypeScript</span></li>
+      <li><span>AGENT</span><span>Harness · ACP/A2A · MCP</span></li>
+      <li><span>BACKEND</span><span>FastAPI · PostgreSQL</span></li>
+      <li><span>INFRA</span><span>Docker · Linux · nftables</span></li>
+      <li><span>ML</span><span>PyTorch · OpenCV</span></li>
+      <li><span>NETWORK</span><span>TCP/IP · DNS · 抓包分析</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer id="contact" class="wrap">
+    <div class="foot reveal">
+    <h2>如果是同行，欢迎交流；<br>如果<em>在招人</em>，欢迎联系。</h2>
+    <div class="flinks">
+      <a href="https://github.com/ProfYangShengXu">GitHub ↗</a>
+      <a href="mailto:2601653334@qq.com">2601653334@qq.com</a>
+      <a href="#">简历 PDF ↗</a>
+    </div>
+  </div>
+  <div class="colophon">
+    <span>CHEN TINGJUN · 2026</span>
+    <span>HTML / CSS — no framework, no tracking</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  document.documentElement.classList.add('js');
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  function showAll(){ els.forEach(function(e){e.classList.add('on')}); }
+  if(!('IntersectionObserver' in window)){ showAll(); return; }
+  var io=new IntersectionObserver(function(en){
+    en.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target);} });
+  },{threshold:0.05,rootMargin:'0px 0px -2% 0px'});
+  els.forEach(function(e){ io.observe(e) });
+  setTimeout(showAll, 1500);
+})();
+</script>
+
+</body>
+</html>
