@@ -1,3 +1,7 @@
 *.md
 !README.md
 site.css
+*.md
+!README.md
+site.css
+待验证/
