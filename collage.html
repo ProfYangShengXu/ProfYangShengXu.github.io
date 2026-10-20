@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>collage — 陈霆钧</title>
-<meta name="description" content="把一段文字排进任意形状的排版引擎，用字形本身的疏密构成画面。">
-<meta property="og:title" content="collage — Typographic Engine">
-<meta property="og:description" content="把一段文字排进任意形状的排版引擎，用字形本身的疏密构成画面。">
+<meta name="description" content="把剪影和文案拼成海报的排版引擎：先切块再摆组件，按面积预算分配层级，配色从素材采样。">
+<meta property="og:title" content="collage — Typographic Composition">
 <meta property="og:type" content="website">
 <style>
 :root{
@@ -127,103 +126,184 @@ footer{border-top:1px solid var(--line);padding:52px 0;margin-top:10vh}
   html{scroll-behavior:auto}
 }
 
-
-.badge{display:inline-block;font-family:var(--mono);font-size:9.5px;
-       letter-spacing:.14em;color:var(--acid);border:1px solid rgba(214,255,46,.35);
-       padding:2px 7px;margin-left:9px;vertical-align:middle;white-space:nowrap}
-.wipbar{border:1px solid rgba(214,255,46,.28);
-        background:rgba(214,255,46,.05);
-        padding:14px 20px;margin:0 auto 0;max-width:800px;
-        font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
-        color:rgba(242,237,227,.7);text-align:center}
-.wipbar b{color:var(--acid);font-weight:400}
-
-</style>
-<style>
-/* 概述三段 */
-.ov{margin-bottom:42px}
-.ov h3{font-family:var(--serif);font-weight:700;font-size:1.02rem;
-       letter-spacing:.12em;color:var(--acid);margin-bottom:14px}
+.ov{margin-bottom:40px}
+.ov h3{font-family:var(--serif);font-weight:700;font-size:1.02rem;letter-spacing:.12em;
+       color:var(--acid);margin-bottom:14px}
 .ov p{font-size:15.5px;line-height:2.05;color:rgba(242,237,227,.82)}
 .ov p+p{margin-top:16px}
 .ov strong{color:var(--ink);font-weight:600}
+.ov em{font-style:normal;color:var(--acid)}
+.ov ul{list-style:none;margin:18px 0 0}
+.ov li{position:relative;padding-left:22px;margin-bottom:14px;font-size:15px;
+       line-height:1.95;color:rgba(242,237,227,.82)}
+.ov li::before{content:"";position:absolute;left:0;top:.72em;width:8px;height:1px;background:var(--acid)}
 
-/* 案例卡 */
-.case{border:1px solid var(--line);padding:32px 34px;margin-bottom:26px;
-      background:rgba(242,237,227,.02)}
-.case-h{display:flex;justify-content:space-between;align-items:baseline;
-        gap:18px;flex-wrap:wrap;margin-bottom:18px;
-        padding-bottom:14px;border-bottom:1px solid var(--line)}
+pre{font-family:var(--mono);font-size:12px;line-height:1.9;background:rgba(242,237,227,.035);
+    border:1px solid var(--line);padding:20px 22px;overflow-x:auto;margin:22px 0;
+    color:rgba(242,237,227,.8)}
+pre b{color:var(--acid);font-weight:400}
+
+.case{border:1px solid var(--line);padding:0;margin-bottom:28px;background:rgba(242,237,227,.02)}
+.case-h{display:flex;justify-content:space-between;align-items:baseline;gap:18px;
+        flex-wrap:wrap;padding:20px 24px;border-bottom:1px solid var(--line)}
 .case-h b{font-family:var(--serif);font-weight:700;font-size:1.1rem;letter-spacing:.03em}
 .case-h span{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--dim)}
-.case p{font-size:14.5px;line-height:1.95;color:var(--dim);margin-bottom:16px}
-.case p:last-child{margin-bottom:0}
-.case em{font-style:normal;color:var(--acid)}
-.case strong{color:var(--ink);font-weight:600}
+.case-b{padding:0}
+.case-b img{width:100%;display:block}
+.case-f{padding:16px 24px;font-size:13.5px;line-height:1.85;color:var(--dim);
+        border-top:1px solid var(--line)}
+.case-f em{font-style:normal;color:var(--acid)}
 
-/* 数据行 */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-       gap:1px;background:var(--line);border:1px solid var(--line);margin:20px 0}
-.stats div{background:var(--bg);padding:20px 22px}
-.stats dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--dim)}
-.stats dd{font-family:var(--mono);font-size:1.5rem;margin-top:8px;color:var(--ink)}
-.stats dd i{font-style:normal;color:var(--acid)}
-.stats dd small{font-size:.5em;color:var(--dim);margin-left:4px}
+.figs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}
+.figs figure{border:1px solid var(--line);background:rgba(242,237,227,.02)}
+.figs img{width:100%;display:block}
+.figs figcaption{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+                 color:var(--dim);padding:10px 12px;border-top:1px solid var(--line)}
 
-.empty{font-size:13.5px;color:var(--dim);line-height:1.9;
-       border:1px dashed var(--line);padding:28px 30px}
+.pending{border:1px dashed var(--line);padding:28px 30px}
+.pending p{font-size:13.5px;line-height:1.9;color:var(--dim)}
+.pending p+p{margin-top:12px}
+.pending b{color:var(--ink);font-weight:500}
+
 </style>
-<script>document.documentElement.classList.add("js");</script>
 </head>
 <body>
-<nav>
-  <div class="wrap">
-    <a href="index.html" class="brand">陈霆钧<i>.</i><small>朝天椒</small></a>
-    <ul>
-      <li><a href="index.html#work">作品</a></li>
-      <li><a href="blog.html">博客</a></li>
-      <li><a href="index.html#about">关于</a></li>
-    </ul>
-  </div>
-</nav>
+<nav><div class="wrap">
+  <a href="index.html" class="brand">陈霆钧<i>.</i><small>朝天椒</small></a>
+  <ul><li><a href="index.html#work">作品</a></li><li><a href="blog.html">博客</a></li>
+  <li><a href="index.html#about">关于</a></li></ul>
+</div></nav>
 
 <header class="ph wrap">
   <a class="crumb reveal on" href="index.html#work">← 全部作品</a>
   <h1 class="reveal on">collage</h1>
-  <span class="kind reveal d1">Typographic Engine</span>
-  <p class="lede reveal d1">把一段文字排进任意形状的排版引擎，用字形本身的疏密构成画面。</p>
+  <span class="kind reveal d1">Typographic Composition</span>
+  <p class="lede reveal d1">
+    输入一张图加一段文案，输出一张海报：文字与图形组件被排进形状内部，构成那个形状本身。
+  </p>
   <div class="acts reveal d2">
-      <a class="act ghost" href="#">下载<span class="badge">开发中</span><small>DOWNLOAD</small></a>
-      <a class="act" href="https://github.com/ProfYangShengXu/collage">GitHub<small>SOURCE</small></a>
+    <a class="act" href="https://github.com/ProfYangShengXu/collage">GitHub<small>SOURCE</small></a>
   </div>
 </header>
 
 <section class="wrap narrow">
-  <div class="ov reveal d1"><h3>是什么</h3><p>一个形状内文字排版引擎。给定一个闭合轮廓和一段文字，
-     引擎把文字铺满整个形状的内部，并让排版密度随形状变化。</p></div>
-  <div class="ov reveal d1"><h3>做什么</h3><p>接受任意形状与文本，输出排好版的图像或矢量文件。支持调整字体、字号范围、疏密曲线，
-     以及文字与形状边界的贴合方式。</p></div>
-  <div class="ov reveal d1"><h3>为什么这么做</h3><p>常规的文字绕排只能处理"文字围绕一个形状"，处理不了"文字填满一个形状"。
-     而填充形状时，如果简单地均匀铺排，得到的画面是平的 —— 视觉重量会平均分布，没有重点。</p>
-     <p>所以用四叉树按局部曲率和面积递归分割轮廓内部，让每个单元独立决定自己的排版密度。
-     靠近边界收紧、中心放松，画面才有呼吸。</p></div>
+  <div class="ov reveal d1"><h3>是什么</h3>
+  <p>一个把剪影和文案拼成海报的排版引擎。给一张图（人物剪影、物件轮廓）和一套文案，
+  它输出三张不同范式的主视觉 —— 远看是那个剪影，近看是排进去的文字和图形组件。</p></div>
+
+  <div class="ov reveal d1"><h3>做什么</h3>
+  <p>接受任意有清晰主体的图片，自动提取形状，把画布切成大小错落的矩形，
+  按层级分配成底纹、主标题、副标题、正文，再渲染成图。</p>
+  <p>配色不写死，从素材主体区域采样派生 —— 换一张图，配色跟着变，代码不用动。</p></div>
+
+  <div class="ov reveal d1"><h3>为什么这么做</h3>
+  <p>常见的「文字排成形状」是把字逐行填进形状：沿扫描线摆字，挤满就换行。
+  这样做出来的图<strong>没有视觉层级</strong> —— 所有字差不多大，远看是一块均匀的灰，
+  近看也读不出主次，因为标题和正文只差一两个字号。</p>
+  <p>这个项目的做法是<em>先切块，再摆组件</em>：</p>
+  <ul>
+    <li><b>分区</b> —— 把形状包围盒递归四等分，得到一组大小错落的矩形。
+    关键在<strong>随机停止</strong>：块小于下限必停，否则按概率决定停不停，
+    于是同一层有的继续切、有的就地停下，面积差可以达到 16 倍。</li>
+    <li><b>分配</b> —— 按 <code>9:3:1:1</code> 的面积预算把矩形分给
+    无意义底纹 / 主标题 / 副标题 / 正文四个层级。</li>
+    <li><b>实例化</b> —— 每个层级长出不同形态：巨型反白字块、描边方框、报栏正文、质感底纹。
+    组件允许超出形状边界、被形状裁切 —— 这是「极端字号」的落地方式。</li>
+  </ul>
+  <p>层级来自<strong>差异</strong>（字号跨度、组件形态、面积对比），不来自统一放大。</p></div>
+
+  <div class="ov reveal d1"><h3>三条让画面不碎的硬规则</h3>
+  <p>底纹一多就容易碎成马赛克。这里定了三条：</p>
+  <ul>
+    <li><b>质感按面积分配，不按块数。</b>块的面积差异极大，按块数分配会让小碎块吃掉配额。
+    代码把块按面积降序累加，累计到预算线才换质感 —— 主导的是画面的比例，不是块的数量。</li>
+    <li><b>底纹与留白对半。</b>留白是设计的一部分，不是「没铺满的剩余空间」。</li>
+    <li><b>留白底色与文字框衬底用同一个色值。</b>两套白并置会被人一眼看出色差。</li>
+  </ul></div>
+
+  <div class="ov reveal d1"><h3>另外两层</h3>
+  <p><strong>补色块</strong> —— 无意义层里还有一个实心色块，颜色从采样主色色相转 180° 得来，
+  饱和度单独顶高（低饱和素材直接取补色会得到灰调，融进纸色里）。面积固定为画布 1/18，
+  贴着主体但绝不压到它；放不下整块就拆成多块，块与块的中心距不小于画布短边的一半 ——
+  分散是硬约束。</p>
+  <p><strong>微观信息层</strong> —— 沿文字组件外侧排一排 8–10px 的小字，
+  不承担阅读功能，作用是把大片留白「激活」。内容全部从已有文案派生：
+  标题的哈希当编号、副标题的首字母当缩写、正文里最长的词当关键词。
+  换素材换文案自动生成，不需要人配。</p></div>
 </section>
 
 <section class="wrap narrow">
-  <h2 class="sec-h reveal">案例</h2>
-  <div class="case reveal d1"><div class="case-h"><b>虎形填充</b><span>单图层 · 四叉树布局</span></div><p>把一段文字排进老虎轮廓。引擎按轮廓内的局部宽度调整每行字数，
-        在躯干处形成较松的排布，在四肢与尾部的窄处自动收紧。</p>
-        <p>同一段文字换一个轮廓，会得到完全不同的画面节奏 ——
-        因为密度分布由形状本身决定，而不由文字数量决定。</p>
-        <p class="empty">示例图像待补充。</p></div>
+  <h2 class="sec-h reveal">三种呈现范式</h2>
+  <p class="reveal d1" style="font-size:14.5px;line-height:1.95;color:var(--dim);margin-bottom:26px">
+  同一套排版层，区别只在它和形状的关系。后两种必须用贴边版式 ——
+  用版心版式会被剪影整个挖掉，只剩碎片。
+  </p>
+
+  <div class="case reveal d1">
+    <div class="case-h"><b>剪影填充</b><span>silhouette · 排版构成形状</span></div>
+    <div class="case-b"><img src="img/collage/silhouette.png" alt="剪影填充"></div>
+    <div class="case-f">版心在形状内。文字与底纹共同撑起剪影，远看是虎，近看是排版。</div>
+  </div>
+
+  <div class="figs reveal d1">
+    <figure><img src="img/collage/photo.png" alt="原图加背景">
+      <figcaption>原图加背景 · photo</figcaption></figure>
+    <figure><img src="img/collage/negative.png" alt="背景负形">
+      <figcaption>背景负形 · negative</figcaption></figure>
+  </div>
+  <p class="reveal d2" style="font-size:13.5px;line-height:1.9;color:var(--dim);margin-top:18px">
+  photo 把原图贴上去、排版当背景；negative 让形状以留白出现。两者都贴画布边缘。
+  </p>
+</section>
+
+<section class="wrap narrow">
+  <h2 class="sec-h reveal">用法</h2>
+<pre class="reveal d1">pip install -e .
+
+collage examples/tiger-shikigami.jpg \
+  --title "TIGER SHIKIGAMI" \
+  --title-sub "original artwork / form 01" \
+  --sub "SHIKIGAMI" --sub-en "FORM / 01" \
+  --body "A silent guardian drawn in ink and warm ochre." \
+  --out out/
+
+<b>输出</b>
+out/剪影填充.png · out/原图加背景.png · out/背景负形.png</pre>
+  <p class="reveal d1" style="font-size:14px;line-height:1.95;color:var(--dim)">
+  常用选项：<code style="font-family:var(--mono);font-size:12.5px;color:var(--acid)">--threshold</code> 白底阈值 ·
+  <code style="font-family:var(--mono);font-size:12.5px;color:var(--acid)">--largest-only</code> 只留最大连通域 ·
+  <code style="font-family:var(--mono);font-size:12.5px;color:var(--acid)">--paradigm</code> 只出一种范式 ·
+  <code style="font-family:var(--mono);font-size:12.5px;color:var(--acid)">--tags</code> 散落小标签 ·
+  <code style="font-family:var(--mono);font-size:12.5px;color:var(--acid)">--meta</code> 右下角元信息
+  </p>
+</section>
+
+<section class="wrap narrow">
+  <h2 class="sec-h reveal">配色是采样出来的</h2>
+  <p class="reveal d1" style="font-size:14.5px;line-height:1.95;color:var(--dim)">
+  从原图<strong style="color:var(--ink)">主体区域</strong>取色，派生整套配色（强调色 / 墨色 / 纸色 / 底纹基色）。
+  选主色时按 <code style="font-family:var(--mono);font-size:12.5px;color:var(--acid)">饱和度 × 明度^2.2</code> 打分 ——
+  只看饱和度会被深色轮廓和暗部拉偏，实测会选出深棕而非亮黄。
+  </p>
+</section>
+
+<section class="wrap narrow">
+  <h2 class="sec-h reveal">状态</h2>
+  <div class="pending reveal d1">
+    <p><b>在线服务未开发。</b>这个项目目前是 Python 库 + 命令行工具，本地运行、输出 PNG。
+    网页端需要把渲染层搬到浏览器或架一个服务，尚未做。</p>
+    <p style="color:rgba(242,237,227,.34)">这里放的是仓库里真实跑出来的输出，不是效果图。</p>
+  </div>
 </section>
 
 <section class="wrap narrow">
   <h2 class="sec-h reveal">规格</h2>
   <ul class="spec reveal d1">
     <li><span class="k">语言</span><span class="v">Python</span></li>
-    <li><span class="k">形态</span><span class="v">库 · 命令行 · 服务</span></li>
-    <li><span class="k">算法</span><span class="v">四叉树布局</span></li>
+    <li><span class="k">形态</span><span class="v">库 · 命令行</span></li>
+    <li><span class="k">分区</span><span class="v">四叉树 · 随机停止 · 面积预算 9:3:1:1</span></li>
+    <li><span class="k">配色</span><span class="v">素材采样 · 饱和度 × 明度^2.2</span></li>
+    <li><span class="k">输出</span><span class="v">剪影填充 / 原图加背景 / 背景负形</span></li>
     <li><span class="k">许可</span><span class="v">MIT</span></li>
   </ul>
   <div class="pager reveal d2">
@@ -232,24 +312,21 @@ footer{border-top:1px solid var(--line);padding:52px 0;margin-top:10vh}
   </div>
 </section>
 
-<footer>
-  <div class="wrap colophon">
-    <span>陈霆钧 · 朝天椒 · 2026</span>
-    <span>HTML / CSS — no framework, no tracking</span>
-  </div>
-</footer>
+<footer><div class="wrap colophon">
+  <span>陈霆钧 · 朝天椒 · 2026</span>
+  <span>HTML / CSS — no framework, no tracking</span>
+</div></footer>
 <script>
 (function(){
   document.documentElement.classList.add('js');
   var els=[].slice.call(document.querySelectorAll('.reveal'));
-  function showAll(){ els.forEach(function(e){e.classList.add('on')}); }
-  if(!('IntersectionObserver' in window)){ showAll(); return; }
+  function showAll(){els.forEach(function(e){e.classList.add('on')})}
+  if(!('IntersectionObserver' in window)){showAll();return;}
   var io=new IntersectionObserver(function(en){
-    en.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target);} });
+    en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}});
   },{threshold:0.05,rootMargin:'0px 0px -2% 0px'});
-  els.forEach(function(e){ io.observe(e) });
-  // 兜底：1.5s 后强制全部可见，防止任何边界情况导致内容不可见
-  setTimeout(showAll, 1500);
+  els.forEach(function(e){io.observe(e)});
+  setTimeout(showAll,1500);
 })();
 </script>
 </body>
