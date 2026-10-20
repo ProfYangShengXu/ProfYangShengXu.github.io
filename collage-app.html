@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>collage 在线服务 — 陈霆钧</title>
+<meta name="description" content="把一段文字排进任意形状：选择内置形状或上传自己的剪影，调整参数，导出图像。">
+<meta property="og:title" content="collage 在线服务">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --bg:#0b0b0c; --ink:#f2ede3; --dim:rgba(242,237,227,.56);
+  --faint:rgba(242,237,227,.34); --line:rgba(242,237,227,.14);
+  --acid:#d6ff2e;
+  --serif:"Songti SC","Noto Serif CJK SC","Source Han Serif SC","SimSun",serif;
+  --sans:"PingFang SC","HarmonyOS Sans SC","MiSans","Microsoft YaHei",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+     -webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(214,255,46,.05),transparent 70%)}
+::selection{background:var(--acid);color:#0b0b0c}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+.wrap.narrow{max-width:800px}
+
+/* 渐进增强：默认可见。只有 html.js 存在（脚本已运行）才隐藏等待揭示。
+   这样即使 JS 报错 / 被禁用 / IntersectionObserver 不支持，内容也不会消失。 */
+.reveal{opacity:1;transform:none}
+html.js .reveal{opacity:0;transform:translateY(26px);
+                transition:opacity .9s ease,transform .9s ease}
+html.js .reveal.on{opacity:1;transform:none}
+html.js .reveal.d1{transition-delay:.12s}
+html.js .reveal.d2{transition-delay:.24s}
+html.js .reveal.d3{transition-delay:.36s}
+
+nav{position:sticky;top:0;z-index:50;background:rgba(11,11,12,.78);
+    backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;height:60px}
+.brand{font-family:var(--serif);font-weight:900;font-size:15px;letter-spacing:.14em;
+       text-decoration:none;color:var(--ink)}
+.brand i{font-style:normal;color:var(--acid)}
+.brand small{font-family:var(--mono);font-weight:400;font-size:10.5px;
+             letter-spacing:.16em;color:var(--dim);margin-left:12px}
+nav ul{display:flex;gap:30px;list-style:none}
+nav a{font-size:12.5px;letter-spacing:.16em;color:var(--dim);text-decoration:none;
+      transition:color .25s}
+nav a:hover,nav a.on{color:var(--ink)}
+
+/* ── 详情页 ── */
+.ph{padding-top:11vh;padding-bottom:7vh;border-bottom:1px solid var(--line)}
+.crumb{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;
+       color:var(--dim);text-decoration:none;transition:color .25s}
+.crumb:hover{color:var(--acid)}
+.ph h1{font-family:var(--serif);font-weight:900;line-height:1.16;letter-spacing:.01em;
+       font-size:clamp(2.3rem,5.6vw,4.4rem);margin:28px 0 0}
+.ph h1 em{font-style:normal;color:var(--acid)}
+.ph .kind{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;
+          color:var(--acid);text-transform:uppercase;margin-top:26px;display:block}
+.ph .lede{margin-top:22px;max-width:36em;color:var(--dim);font-size:16px;line-height:1.95}
+
+/* 行动区：在线服务 / 下载 / 代码 */
+.acts{display:flex;flex-wrap:wrap;gap:12px;margin-top:44px}
+.act{display:inline-flex;align-items:center;gap:9px;padding:14px 26px;
+     font-size:13.5px;letter-spacing:.05em;text-decoration:none;
+     border:1px solid var(--faint);color:var(--ink);transition:all .28s}
+.act:hover{background:var(--acid);color:#0b0b0c;border-color:var(--acid)}
+.act.ghost{border-color:var(--line);color:var(--dim)}
+.act.ghost:hover{background:transparent;color:var(--ink);border-color:var(--faint)}
+.act small{font-family:var(--mono);font-size:10px;letter-spacing:.1em;opacity:.65}
+
+section{padding-top:9vh;padding-bottom:9vh}
+.sec-h{font-family:var(--serif);font-weight:900;letter-spacing:.03em;
+       font-size:clamp(1.4rem,2.8vw,2rem);margin-bottom:36px;
+       padding-bottom:18px;border-bottom:1px solid var(--line)}
+.body-t p{font-size:15.5px;line-height:2.05;color:rgba(242,237,227,.82);margin-bottom:24px}
+.body-t strong{color:var(--ink);font-weight:600}
+.body-t em{font-style:normal;color:var(--acid)}
+
+/* 规格表 */
+.spec{list-style:none}
+.spec li{display:grid;grid-template-columns:150px 1fr;gap:24px;
+         padding:14px 0;border-bottom:1px solid var(--line);font-size:14px}
+.spec dt,.spec .k{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;
+                  color:var(--dim);padding-top:2px}
+.spec .v{color:rgba(242,237,227,.86);line-height:1.7}
+
+/* 三步 / 特性 */
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line)}
+.feat{padding:30px 26px 30px 0;border-right:1px solid var(--line)}
+.feat:last-child{border-right:none}
+.feat .n{font-family:var(--mono);font-size:11px;color:var(--acid);
+         letter-spacing:.16em;margin-bottom:16px}
+.feat h3{font-family:var(--serif);font-weight:700;font-size:1.15rem;
+         letter-spacing:.03em;margin-bottom:10px}
+.feat p{font-size:13.5px;line-height:1.8;color:var(--dim)}
+
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.9;
+    background:rgba(242,237,227,.035);border:1px solid var(--line);
+    padding:22px 24px;overflow-x:auto;margin:24px 0;color:rgba(242,237,227,.8)}
+pre b{color:var(--acid);font-weight:400}
+
+.note{font-size:13px;line-height:1.85;color:var(--dim);
+      border-left:2px solid var(--acid);padding-left:20px;margin:28px 0}
+
+.pager{display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px;
+       padding:44px 0 0;border-top:1px solid var(--line);margin-top:6vh}
+.pager a{font-family:var(--mono);font-size:12px;letter-spacing:.1em;
+         color:var(--dim);text-decoration:none;transition:color .25s}
+.pager a:hover{color:var(--acid)}
+
+footer{border-top:1px solid var(--line);padding:52px 0;margin-top:10vh}
+.colophon{font-family:var(--mono);font-size:10.5px;color:#3d3d42;
+          letter-spacing:.12em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
+
+@media(max-width:880px){
+  .feats{grid-template-columns:1fr}
+  .feat{border-right:none;border-bottom:1px solid var(--line);padding-right:0}
+  .spec li{grid-template-columns:110px 1fr;gap:16px}
+  .reveal{transition-duration:.55s}
+}
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  html{scroll-behavior:auto}
+}
+
+.app{padding-top:7vh;padding-bottom:8vh}
+.stepper{display:flex;margin-bottom:44px;border-bottom:1px solid var(--line)}
+.st{flex:1;padding:0 0 16px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+    color:rgba(242,237,227,.28);position:relative;transition:color .3s}
+.st b{display:block;margin-bottom:7px;font-size:10px;font-weight:400}
+.st.on{color:var(--ink)}.st.on b{color:var(--acid)}
+.st.done{color:var(--dim)}.st.done b{color:var(--acid)}
+.st::after{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:0;
+           background:var(--acid);transition:width .5s ease}
+.st.on::after,.st.done::after{width:100%}
+.pane{display:none}
+.pane.on{display:block;animation:fade .5s ease}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.field{margin-bottom:28px}
+.lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;
+     letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:11px}
+.lab em{font-style:normal;color:rgba(242,237,227,.3);text-transform:none;letter-spacing:.04em}
+textarea,input[type=text],select{width:100%;background:rgba(242,237,227,.035);
+  border:1px solid var(--line);color:var(--ink);font-family:var(--sans);font-size:14px;
+  padding:15px 17px;outline:none;transition:border-color .25s;line-height:1.8}
+textarea:focus,input[type=text]:focus,select:focus{border-color:var(--faint)}
+textarea{min-height:150px;resize:vertical;font-family:var(--mono);font-size:12.5px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:34px}
+.btn{padding:14px 30px;background:var(--acid);color:#0b0b0c;border:none;cursor:pointer;
+     font-family:var(--sans);font-size:13.5px;letter-spacing:.05em;
+     transition:transform .2s,opacity .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn.ghost{background:transparent;color:var(--dim);border:1px solid var(--line)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--faint)}
+.notice{padding:15px 19px;border:1px solid rgba(214,255,46,.3);
+        background:rgba(214,255,46,.05);font-size:13px;color:var(--dim);
+        margin-bottom:28px;line-height:1.8}
+.notice b{color:var(--acid)}
+.drop{border:1px dashed var(--line);padding:30px 20px;text-align:center;
+      transition:all .28s;cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--acid);background:rgba(214,255,46,.04)}
+.drop .ico{font-family:var(--mono);font-size:20px;color:var(--acid);margin-bottom:10px}
+.drop p{font-size:13px;color:var(--dim);line-height:1.7}
+.drop .hint{font-family:var(--mono);font-size:10.5px;color:rgba(242,237,227,.28);margin-top:7px}
+.shapes{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.shape{width:70px;height:70px;border:1px solid var(--line);display:flex;align-items:center;
+       justify-content:center;cursor:pointer;transition:all .22s;background:rgba(242,237,227,.02)}
+.shape:hover{border-color:var(--faint)}
+.shape.on{border-color:var(--acid);background:rgba(214,255,46,.07)}
+.shape svg{width:44px;height:44px;fill:rgba(242,237,227,.45)}
+.shape.on svg{fill:var(--acid)}
+.slider{display:flex;align-items:center;gap:16px}
+.slider input[type=range]{flex:1;accent-color:var(--acid);height:2px}
+.slider .val{font-family:var(--mono);font-size:12px;color:var(--ink);width:56px;text-align:right}
+canvas{max-width:100%;display:block;border:1px solid var(--line);background:#0b0b0c}
+
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <a href="index.html" class="brand">陈霆钧<i>.</i><small>朝天椒</small></a>
+  <ul><li><a href="index.html#work">作品</a></li><li><a href="blog.html">博客</a></li>
+  <li><a href="index.html#about">关于</a></li></ul>
+</div></nav>
+
+<div class="app wrap" style="max-width:920px">
+  <a class="crumb" href="collage.html" style="font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;color:var(--dim);text-decoration:none">← collage</a>
+  <h1 style="font-family:var(--serif);font-weight:900;font-size:clamp(1.9rem,4vw,2.9rem);letter-spacing:.02em;margin:26px 0 0">形状内文字排版</h1>
+  <p style="margin-top:16px;color:var(--dim);font-size:14.5px;line-height:1.95;max-width:34em">
+    给一个形状和一段文字，引擎把文字铺满轮廓的内部，让密度随轮廓宽度变化。
+  </p>
+
+  <div class="stepper" style="margin-top:44px">
+    <div class="st on"><b>01</b>文字与形状</div>
+    <div class="st"><b>02</b>调整参数</div>
+    <div class="st"><b>03</b>预览导出</div>
+  </div>
+
+  <div class="pane on">
+    <div class="notice"><b>前端演示</b>　排版计算在浏览器本地完成，可真实使用；暂不支持保存历史作品。</div>
+    <div class="field">
+      <div class="lab"><span>文字</span><em id="cnt">0 字</em></div>
+      <textarea id="txt">排版是把文字放进形状，让密度随轮廓呼吸。字形本身就是画面。</textarea>
+    </div>
+    <div class="field">
+      <div class="lab"><span>形状</span><em>内置或上传剪影</em></div>
+      <div class="shapes" id="shapes">
+        <div class="shape on" data-s="circle"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg></div>
+        <div class="shape" data-s="star"><svg viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9 16,14 18,22 12,17 6,22 8,14 2,9 9,9"/></svg></div>
+        <div class="shape" data-s="tri"><svg viewBox="0 0 24 24"><polygon points="12,3 22,20 2,20"/></svg></div>
+        <div class="shape" data-s="heart"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.3-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.7-8 11-8 11z"/></svg></div>
+        <div class="shape" data-s="upload" title="上传剪影"><svg viewBox="0 0 24 24"><path d="M12 3l4 4h-3v7h-2V7H8l4-4zM5 18h14v2H5z"/></svg></div>
+      </div>
+      <input type="file" id="silInput" accept="image/*" style="display:none">
+      <div id="silName" class="hint" style="font-family:var(--mono);font-size:10.5px;color:rgba(242,237,227,.3);margin-top:10px"></div>
+      <div class="hint" style="font-family:var(--mono);font-size:10.5px;color:rgba(242,237,227,.28);margin-top:6px">
+        上传的 PNG 只要有不透明像素，就按它的轮廓填充
+      </div>
+    </div>
+    <div class="row"><button class="btn" id="next1">下一步 →</button></div>
+  </div>
+
+  <div class="pane">
+    <div class="field">
+      <div class="lab"><span>行数</span><em>决定文字粗细</em></div>
+      <div class="slider"><input type="range" id="rows" min="20" max="80" value="46">
+      <span class="val" id="rowsV">46</span></div>
+    </div>
+    <div class="field">
+      <div class="lab"><span>字距</span><em>密度松紧</em></div>
+      <div class="slider"><input type="range" id="track" min="0" max="30" value="6">
+      <span class="val" id="trackV">6</span></div>
+    </div>
+    <div class="field">
+      <div class="lab"><span>边缘收缩</span><em>靠近边界时字号衰减</em></div>
+      <div class="slider"><input type="range" id="shrink" min="0" max="80" value="45">
+      <span class="val" id="shrinkV">45</span></div>
+    </div>
+    <div class="row">
+      <button class="btn" id="gen">生成预览</button>
+      <button class="btn ghost" id="back1">← 上一步</button>
+    </div>
+  </div>
+
+  <div class="pane">
+    <div class="lab" style="margin-bottom:16px"><span>预览</span><em id="stat">—</em></div>
+    <canvas id="cv" width="680" height="680"></canvas>
+    <div class="row">
+      <button class="btn" id="dl">下载 PNG</button>
+      <button class="btn ghost" id="back2">← 返回调整</button>
+    </div>
+  </div>
+</div>
+
+<footer><div class="wrap colophon">
+  <span>陈霆钧 · 朝天椒 · 2026</span>
+  <span>HTML / Canvas — 无后端，计算在本地</span>
+</div></footer>
+
+<script>
+document.documentElement.classList.add('js');
+var els=[].slice.call(document.querySelectorAll('.reveal'));
+if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('on')})}
+else{var io=new IntersectionObserver(function(en){en.forEach(function(e){
+  if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}})},
+  {threshold:.05});els.forEach(function(e){io.observe(e)});setTimeout(function(){
+  els.forEach(function(e){e.classList.add('on')})},1500);}
+
+var shape='circle', silMask=null, silW=0, silH=0;
+
+function goto(n){
+  document.querySelectorAll('.pane').forEach(function(p,i){p.classList.toggle('on',i===n-1)});
+  document.querySelectorAll('.st').forEach(function(s,i){
+    s.classList.toggle('on',i===n-1); s.classList.toggle('done',i<n-1);});
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===3) render();
+}
+
+document.getElementById('txt').addEventListener('input',function(){
+  document.getElementById('cnt').textContent=this.value.length+' 字';
+});
+document.getElementById('cnt').textContent=document.getElementById('txt').value.length+' 字';
+
+document.querySelectorAll('.shape').forEach(function(el){
+  el.onclick=function(){
+    document.querySelectorAll('.shape').forEach(function(x){x.classList.remove('on')});
+    el.classList.add('on'); shape=el.dataset.s;
+    if(shape==='upload'){document.getElementById('silInput').click();}
+  };
+});
+
+document.getElementById('silInput').onchange=function(e){
+  var f=e.target.files[0]; if(!f) return;
+  var img=new Image();
+  img.onload=function(){
+    var c=document.createElement('canvas');
+    var N=200, sc=Math.min(N/img.width,N/img.height);
+    c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+    var cx=c.getContext('2d'); cx.drawImage(img,0,0,c.width,c.height);
+    var d=cx.getImageData(0,0,c.width,c.height).data;
+    var m=new Uint8Array(c.width*c.height);
+    for(var i=0;i<m.length;i++){ m[i]= d[i*4+3]>40 ? 1:0; }
+    silMask=m; silW=c.width; silH=c.height;
+    document.getElementById('silName').textContent='已载入剪影：'+f.name;
+  };
+  img.src=URL.createObjectURL(f);
+};
+
+['rows','track','shrink'].forEach(function(id){
+  var el=document.getElementById(id), out=document.getElementById(id+'V');
+  el.oninput=function(){ out.textContent=el.value; };
+});
+
+document.getElementById('next1').onclick=function(){goto(2)};
+document.getElementById('back1').onclick=function(){goto(1)};
+document.getElementById('back2').onclick=function(){goto(2)};
+document.getElementById('gen').onclick=function(){goto(3)};
+
+function inside(s,x,y,w,h){
+  if(s==='upload' && silMask){
+    var u=Math.floor(x/w*silW), v=Math.floor(y/h*silH);
+    if(u<0||v<0||u>=silW||v>=silH) return false;
+    return silMask[v*silW+u]===1;
+  }
+  var nx=(x/w)*2-1, ny=(y/h)*2-1;
+  if(s==='circle') return nx*nx+ny*ny<=1;
+  if(s==='tri')    return ny<=0.62 && Math.abs(nx)<=(ny+1)*0.52;
+  if(s==='star'){ var r=Math.hypot(nx,ny), a=Math.atan2(ny,nx);
+    return r <= 0.52+0.48*Math.abs(Math.cos(2.5*a)); }
+  if(s==='heart'){ var yy=-ny*1.15;
+    return Math.pow(nx*nx+yy*yy-1,3)-nx*nx*yy*yy*yy<=0; }
+  return true;
+}
+
+function render(){
+  var txt=(document.getElementById('txt').value||'文字').replace(/\s+/g,'');
+  var rows=+document.getElementById('rows').value;
+  var trk=+document.getElementById('track').value/100;
+  var shr=+document.getElementById('shrink').value/100;
+  var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+  var W=cv.width, H=cv.height;
+  ctx.fillStyle='#0b0b0c'; ctx.fillRect(0,0,W,H);
+  var rh=H/rows, i=0, drawn=0;
+  for(var r=0;r<rows;r++){
+    var y=r*rh+rh*0.8, L=null, R=null;
+    for(var x=0;x<W;x+=2){ if(inside(shape,x,y,W,H)){ if(L===null)L=x; R=x; } }
+    if(L===null) continue;
+    var w=R-L; if(w<10) continue;
+    var cy=Math.abs(y/H-0.5)*2;
+    var fs=Math.max(5, Math.min(rh*1.08, w/6.5)*(1+shr*0.4 - cy*shr));
+    ctx.font=fs+'px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textBaseline='alphabetic';
+    var px=L+2;
+    while(px<R-4){
+      var ch=txt[i%txt.length], cw=ctx.measureText(ch).width;
+      if(px+cw>R) break;
+      ctx.fillStyle='rgba(242,237,227,'+(0.5+0.4*(1-cy)).toFixed(3)+')';
+      ctx.fillText(ch,px,y);
+      px+=cw*(1+trk*(1-cy)); i++; drawn++;
+    }
+  }
+  document.getElementById('stat').textContent=drawn+' 字 · '+rows+' 行';
+}
+
+document.getElementById('dl').onclick=function(){
+  var a=document.createElement('a');
+  a.download='collage.png';
+  a.href=document.getElementById('cv').toDataURL('image/png');
+  a.click();
+};
+</script>
+</body>
+</html>
