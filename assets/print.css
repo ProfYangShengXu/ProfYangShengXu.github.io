@@ -301,3 +301,65 @@ h1,.sec-title,.foot h2,.item h3{text-wrap:balance}
 .sec-en::before{box-shadow:2px 2px 0 var(--magenta)}
 .item h3::before{box-shadow:3px 3px 0 var(--magenta)}
 .btn:hover{box-shadow:3px 3px 0 var(--magenta)}
+
+/* ⑧ 入场动画：一次「印版抬起 + 标题显影」
+   判据来自 dict/ch6：入场 opacity+位移 8–24px（6.4）、错峰 40–80ms（6.6）、
+   clip-path 做揭示而不是 opacity 冒充（6.7）、ease-out（6.1）、总时长 ≤900ms（6.3）、
+   reduced-motion 归零（6.20） */
+
+/* 幕布：同色暗底，只有一条酸色下缘，向上抬起 —— 像印版离纸 */
+.boot{
+  position:fixed;inset:0;z-index:300;pointer-events:none;
+  background:#0b0b0c;border-right:2px solid var(--acid-ink);
+  transform:translateX(0);
+}
+/* 幕布自带同一道光晕，否则揭幕时会出现一条硬缝 */
+.boot::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(214,255,46,.05),transparent 70%);
+}
+html.js .boot{animation:bootWipe .46s cubic-bezier(.22,.8,.24,1) 0s forwards}
+@keyframes bootWipe{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(101%)}
+}
+html:not(.js) .boot{display:none}
+
+/* 主标题：从左向右遮罩显影（与阅读方向一致） */
+/* 标题不淡入，只做遮罩显影 —— 字是"印"出来的，不是"显"出来的 */
+html.js .hero h1{animation:titleIn .58s cubic-bezier(.22,.8,.24,1) .16s both}
+@keyframes titleIn{
+  from{clip-path:inset(0 100% 0 0);transform:translateY(10px)}
+  to{clip-path:inset(0 0 0 0);transform:none}
+}
+
+/* 身份行 / 正文 / 按钮 / meta：错峰 70ms，位移 12px */
+html.js .hero .hero-role{animation:fadeUp .45s cubic-bezier(.22,.8,.24,1) .40s both}
+html.js .hero .hero-sub{animation:fadeUp .45s cubic-bezier(.22,.8,.24,1) .47s both}
+html.js .hero .hero-sub+.hero-sub{animation-delay:.54s}
+html.js .hero .cta-row{animation:fadeUp .45s cubic-bezier(.22,.8,.24,1) .60s both}
+html.js .hero .meta{animation:fadeUp .45s cubic-bezier(.22,.8,.24,1) .66s both}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:none}
+}
+
+/* 印版归位：身份行后的酸方块，背后的品红从 14px 收到 3px —— 套准的那一下 */
+html.js .hero .hero-role::after{animation:registerIn .7s cubic-bezier(.22,.8,.24,1) .42s both}
+@keyframes registerIn{
+  from{box-shadow:14px 10px 0 var(--magenta)}
+  to{box-shadow:3px 3px 0 var(--magenta)}
+}
+
+/* 导航直接在场，作为视觉锚点，不参与入场 */
+
+@media (prefers-reduced-motion:reduce){
+  html.js .boot{display:none;animation:none}
+  html.js .hero h1,
+  html.js .hero .hero-role,
+  html.js .hero .hero-sub,
+  html.js .hero .cta-row,
+  html.js .hero .meta,
+  html.js .hero .hero-role::after,
+  html.js nav{animation:none !important}
+}
