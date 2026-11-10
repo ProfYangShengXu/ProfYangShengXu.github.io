@@ -10,36 +10,12 @@
   --acid-ink:#D6FF2E;
 }
 
-/* 胶片颗粒：极轻，只在大面积暗部可见 */
-body{
-  background-image:radial-gradient(rgba(255,255,255,.013) .6px, transparent .8px);
-  background-size:4px 4px;
-}
-
-/* 半调圆盘：品红（右上）+ 酸绿（左下），screen 叠色 */
+/* 背景回到原站：只有原有的顶部酸色光晕，不加网点 */
 .hero{position:relative}
-.hero::after{
-  content:"";position:absolute;z-index:0;pointer-events:none;
-  right:-7vw;top:-7vh;width:44vw;height:44vw;border-radius:50%;
-  background-image:radial-gradient(rgba(255,46,147,.95) 2.2px, transparent 2.4px);
-  background-size:11px 11px;
-  opacity:.28;mix-blend-mode:screen;
-  -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 30%, transparent 66%);
-          mask-image:radial-gradient(circle at 50% 50%, #000 30%, transparent 66%);
-}
-.hero::before{
-  content:"";position:absolute;z-index:0;pointer-events:none;
-  left:-8vw;bottom:-16vh;width:26vw;height:26vw;border-radius:50%;
-  background-image:radial-gradient(rgba(214,255,46,.95) 1.9px, transparent 2.1px);
-  background-size:9px 9px;
-  opacity:.13;mix-blend-mode:screen;
-  -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 26%, transparent 62%);
-          mask-image:radial-gradient(circle at 50% 50%, #000 26%, transparent 62%);
-}
 .hero > *:not(.halftone):not(.regmark){position:relative;z-index:1}
 
-/* 通用网点容器 */
-.halftone{
+/* 通用网点容器：保留选择器，但不再往背景铺网 */
+.halftone{display:none;
   position:absolute;inset:0;pointer-events:none;z-index:0;
   background-image:radial-gradient(rgba(255,46,147,.9) 1.1px, transparent 1.3px);
   background-size:6px 6px;opacity:.07;mix-blend-mode:screen;
@@ -69,10 +45,16 @@ body{
 .btn.ghost{box-shadow:none;border-color:var(--line)}
 .btn.ghost:hover{box-shadow:2px 2px 0 rgba(242,237,227,.35)}
 
-/* 章节序号：做成小色块，像印刷里的色标条 */
+/* 章节序号：两块专色版错位 4px —— 字典 1.29 的 riso 判据
+   （两版错位 2–8px、边缘露出纯色；深层那块用 multiply 压暗） */
 .sec-idx{
+  position:relative;isolation:isolate;
   color:#0b0b0c;background:var(--acid-ink);
   padding:2px 8px;letter-spacing:.14em;
+}
+.sec-idx::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:var(--magenta);transform:translate(4px,3px);
 }
 
 /* 作品行 hover：一丝品红渗墨，不做位移 */
@@ -108,9 +90,11 @@ h1 .mono{letter-spacing:-.02em}
 /* ③ 半调字：笔画里填网点，只给一个词用 */
 .ht{
   background-image:
-    radial-gradient(#D6FF2E 3.2px, transparent 3.45px),
-    linear-gradient(rgba(214,255,46,.30), rgba(214,255,46,.30));
-  background-size:6.5px 6.5px, 100% 100%;
+    radial-gradient(#D6FF2E 3px, transparent 3.2px),
+    radial-gradient(#D6FF2E 3px, transparent 3.2px),
+    linear-gradient(rgba(214,255,46,.42), rgba(214,255,46,.42));
+  background-size:9px 9px, 9px 9px, 100% 100%;
+  background-position:0 0, 4.5px 4.5px, 0 0;
   -webkit-background-clip:text;background-clip:text;
   color:transparent;
 }
@@ -126,6 +110,51 @@ h1 .mono{letter-spacing:-.02em}
   color:rgba(242,237,227,.22);
 }
 @media (max-width:1240px){.rail{display:none}}
+
+/* ⑥ 字族搭配：三族分工，按"谁负责什么"而不是"哪个好看"
+   显示族（serif）：大标题 —— 拉丁走 Georgia，中文走宋体，靠衬线撑住版面
+   文本族（sans） ：正文与界面 —— 拉丁走系统 UI 字，中文走苹方/鸿蒙/雅黑
+   数据族（mono） ：编号、标签、参数 —— 等宽保证数字对齐、字距可控 */
+:root{
+  --display:Georgia,"Times New Roman","Songti SC","Noto Serif CJK SC","Source Han Serif SC",SimSun,serif;
+  --text:system-ui,-apple-system,"Segoe UI","PingFang SC","HarmonyOS Sans SC","MiSans","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,"JetBrains Mono","SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --serif:var(--display);
+  --sans:var(--text);
+}
+
+body{
+  font-family:var(--text);
+  font-feature-settings:"kern" 1,"liga" 1;
+  text-rendering:optimizeLegibility;
+}
+h1,h2,.sec-title,.foot h2,.item h3,.step h3{
+  font-family:var(--display);
+  font-feature-settings:"kern" 1,"liga" 1,"onum" 0;
+}
+h1{font-weight:900}
+.sec-title{font-weight:900}
+.item h3{font-weight:700}
+
+/* 正文：中文微加字距，拉丁不加（靠 kern），混合行才不散 */
+.hero-sub,.item p,.about p,.step p{
+  font-family:var(--text);
+  letter-spacing:.012em;
+}
+.hero-sub code,.item p code{font-family:var(--mono);letter-spacing:0}
+
+/* 数据与标签：等宽 + 表格数字，冒号与数字才对齐 */
+.meta dd,.stack li span:last-child,.item h3 small,.sec-en,.sec-idx,
+.hero-role,.brand small,nav a{
+  font-family:var(--mono);
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.16em;
+}
+.hero-role{letter-spacing:.2em}
+.sec-en{letter-spacing:.24em}
+
+/* 小字号正文别用衬线，笔画会糊 */
+.item p,.step p,.about p,.meta dd{font-weight:400}
 
 /* ⑤ 次级色：品红只做"色块"，不上字
    分工：酸 = 字（半调名字 / 章节号底 / 按钮投影）
