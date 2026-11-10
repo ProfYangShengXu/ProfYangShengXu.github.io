@@ -48,13 +48,18 @@
 /* 章节序号：两块专色版错位 4px —— 字典 1.29 的 riso 判据
    （两版错位 2–8px、边缘露出纯色；深层那块用 multiply 压暗） */
 .sec-idx{
-  position:relative;isolation:isolate;
-  color:#0b0b0c;background:var(--acid-ink);
+  display:inline-block;position:relative;isolation:isolate;
+  color:#0b0b0c;background:none;
   padding:2px 8px;letter-spacing:.14em;
+}
+/* 两块专色版：品红在后（-2）偏移 4px，荧光绿在前（-1）居中 —— 都是实色，不混色 */
+.sec-idx::after{
+  content:"";position:absolute;inset:0;z-index:-2;
+  background:var(--magenta);transform:translate(4px,4px);
 }
 .sec-idx::before{
   content:"";position:absolute;inset:0;z-index:-1;
-  background:rgba(255,79,168,.62);transform:translate(3px,2px);
+  background:var(--acid-ink);
 }
 
 /* 作品行 hover：一丝品红渗墨，不做位移 */
