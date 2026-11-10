@@ -127,6 +127,43 @@ h1 .mono{letter-spacing:-.02em}
 }
 @media (max-width:1240px){.rail{display:none}}
 
+/* ⑤ 次级色：品红只上"小件"，不与酸色抢
+   分工：酸 = 大件（标题字 / 按钮投影 / 章节号底）
+        品红 = 小件（英文标签 / 序号 / hover / 页边注）
+   —— 两个强调色同处一件东西上会互相削弱，所以按尺寸分工，不按心情 */
+
+/* 英文页眉标签 */
+.sec-en{color:rgba(255,46,147,.82)}
+
+/* 导航与页脚的文字 hover：用下划线做品红，字仍变亮 */
+nav a:hover{color:var(--ink);text-decoration-color:rgba(255,46,147,.9)}
+footer a:hover{color:var(--magenta)}
+
+/* 作品行的外链 hover */
+.links a:hover{color:var(--magenta)}
+
+/* meta 的字段名（学校 / 方向 / 状态 / 联系） */
+.meta dt{color:rgba(255,46,147,.84)}
+
+/* 方法步骤序号 */
+.step-n{color:var(--magenta)}
+
+/* 导航里的副标 */
+.brand small{color:rgba(255,46,147,.84)}
+
+/* 作品行 hover：左侧一条品红渗墨边 */
+.item{position:relative}
+.item::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--magenta);opacity:0;transition:opacity .28s ease;
+}
+.item:hover::before{opacity:.9}
+.item:hover{background:linear-gradient(90deg,rgba(255,46,147,.06),transparent 55%)}
+
+/* 行内链接：品红下划线，保持字色 */
+.about a, .hero-sub a{text-decoration:underline;
+  text-decoration-color:rgba(255,46,147,.65);text-underline-offset:4px}
+
 /* 锚点跳转别被吸顶导航挡住 */
 section[id],footer[id]{scroll-margin-top:88px}
 
@@ -143,7 +180,7 @@ section[id],footer[id]{scroll-margin-top:88px}
   background:linear-gradient(90deg,rgba(242,237,227,.22),rgba(242,237,227,.06));
 }
 .sec-en{order:3;font-family:var(--mono);font-size:10px;letter-spacing:.26em;
-  color:rgba(242,237,227,.40);white-space:nowrap}
+  color:rgba(255,46,147,.88);white-space:nowrap}
 .sec-title{order:4;flex:0 0 100%;margin-top:6px}
 
 /* ① 非均匀字阶：只在一个点上做大跳变
