@@ -127,18 +127,35 @@ h1 .mono{letter-spacing:-.02em}
 }
 @media (max-width:1240px){.rail{display:none}}
 
-/* ④ 页眉式章节条：编号 · 中文 · 刻度线 · 英文 */
-.sec-head{align-items:baseline}
-.sec-idx{align-self:center}
+/* 锚点跳转别被吸顶导航挡住 */
+section[id],footer[id]{scroll-margin-top:88px}
+
+/* ④ 页眉式章节条：上排 编号 —— 英文，下排大标题
+   大字号标题放不进同一行，所以拆两排（masthead 版式） */
+.sec-head{
+  display:flex;flex-wrap:wrap;align-items:baseline;
+  column-gap:18px;row-gap:14px;
+  border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:52px;
+}
+.sec-idx{order:1;align-self:center;font-size:11px}
 .sec-rule{
-  flex:1;height:1px;align-self:center;
+  order:2;flex:1;height:1px;align-self:center;
   background:linear-gradient(90deg,rgba(242,237,227,.22),rgba(242,237,227,.06));
-  margin:0 4px;
 }
-.sec-en{
-  font-family:var(--mono);font-size:10px;letter-spacing:.26em;
-  color:rgba(242,237,227,.40);white-space:nowrap;
-}
+.sec-en{order:3;font-family:var(--mono);font-size:10px;letter-spacing:.26em;
+  color:rgba(242,237,227,.40);white-space:nowrap}
+.sec-title{order:4;flex:0 0 100%;margin-top:6px}
+
+/* ① 非均匀字阶：只在一个点上做大跳变
+   17 → 22（列表标题）→ 78（章节标题）→ 112（主标题）
+   中间不留 1.6rem 那种"温吞"的档位，层级靠"跳"区分，不靠"多" */
+.hero h1, h1{font-size:clamp(3.4rem,9vw,7rem);line-height:1.06}
+.sec-title{font-size:clamp(2.4rem,6vw,4.6rem);line-height:1.02;letter-spacing:-.012em}
+.sec-head{padding-bottom:26px;margin-bottom:52px}
+.item h3{font-size:clamp(1.45rem,2.5vw,2rem);letter-spacing:.01em;line-height:1.25}
+.step h3{font-size:1.3rem}
+.foot h2{font-size:clamp(2rem,5vw,3.6rem);line-height:1.18}
+.about p{font-size:16.5px}
 
 /* ① 字阶与行高：正文抬到 17px，暗底更耐读 */
 .hero-sub{font-size:17px;line-height:1.92}
