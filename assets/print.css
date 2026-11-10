@@ -294,3 +294,10 @@ h1,.sec-title,.foot h2,.item h3{text-wrap:balance}
 /* 2.7 垂直节奏：段间距取行高的整数倍，不再随手写 margin */
 .hero-sub+.hero-sub{margin-top:1lh}
 .about p+p{margin-top:1lh}
+
+/* 同一个语言：凡是荧光绿的实心块，背后垫一块实色品红（偏移 3px），不混色
+   —— 这是把「两版套印」这件小事铺满全站的方式，也正好是色彩丰富度的来源 */
+.hero-role::after{box-shadow:3px 3px 0 var(--magenta)}
+.sec-en::before{box-shadow:2px 2px 0 var(--magenta)}
+.item h3::before{box-shadow:3px 3px 0 var(--magenta)}
+.btn:hover{box-shadow:3px 3px 0 var(--magenta)}
