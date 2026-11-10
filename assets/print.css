@@ -4,7 +4,7 @@
    不碰字号、字距、行高，不改任何文案结构。
    ───────────────────────────────────────────────────────────── */
 :root{
-  --magenta:#FF2E93;
+  --magenta:#FF4FA8;
   --cyan:#00C8FF;
   --red:#E4442B;
   --acid-ink:#D6FF2E;
@@ -127,42 +127,58 @@ h1 .mono{letter-spacing:-.02em}
 }
 @media (max-width:1240px){.rail{display:none}}
 
-/* ⑤ 次级色：品红只上"小件"，不与酸色抢
-   分工：酸 = 大件（标题字 / 按钮投影 / 章节号底）
-        品红 = 小件（英文标签 / 序号 / hover / 页边注）
-   —— 两个强调色同处一件东西上会互相削弱，所以按尺寸分工，不按心情 */
+/* ⑤ 次级色：品红只做"色块"，不上字
+   分工：酸 = 字（半调名字 / 章节号底 / 按钮投影）
+        品红 = 块（页眉小方、字段小方、列表小方、hover 渗色）
+   颜色取荧光品红 #FF4FA8，与荧光绿在同一亮度带上，才不会一个跳一个闷 */
 
-/* 英文页眉标签 */
-.sec-en{color:rgba(255,46,147,.82)}
-
-/* 导航与页脚的文字 hover：用下划线做品红，字仍变亮 */
-nav a:hover{color:var(--ink);text-decoration-color:rgba(255,46,147,.9)}
-footer a:hover{color:var(--magenta)}
-
-/* 作品行的外链 hover */
-.links a:hover{color:var(--magenta)}
-
-/* meta 的字段名（学校 / 方向 / 状态 / 联系） */
-.meta dt{color:rgba(255,46,147,.84)}
-
-/* 方法步骤序号 */
-.step-n{color:var(--magenta)}
-
-/* 导航里的副标 */
-.brand small{color:rgba(255,46,147,.84)}
-
-/* 作品行 hover：左侧一条品红渗墨边 */
-.item{position:relative}
-.item::before{
-  content:"";position:absolute;left:0;top:0;bottom:0;width:2px;
-  background:var(--magenta);opacity:0;transition:opacity .28s ease;
+.hero-role::after{
+  content:"";display:inline-block;width:9px;height:9px;
+  background:var(--magenta);margin-left:11px;vertical-align:middle;
+  transform:translateY(-1px);
 }
-.item:hover::before{opacity:.9}
-.item:hover{background:linear-gradient(90deg,rgba(255,46,147,.06),transparent 55%)}
 
-/* 行内链接：品红下划线，保持字色 */
+/* 英文页眉前的小方块 */
+.sec-en{color:rgba(242,237,227,.44)}
+.sec-en::before{
+  content:"";display:inline-block;width:6px;height:6px;
+  background:var(--magenta);margin-right:9px;vertical-align:middle;
+  transform:translateY(-1px);
+}
+
+/* meta 字段名前的 4px 小方块（字色保持灰） */
+.meta dt::before{
+  content:"";display:inline-block;width:4px;height:4px;
+  background:var(--magenta);margin-right:7px;vertical-align:middle;
+  transform:translateY(-2px);
+}
+
+/* 作品标题前的方块：hover 变亮，当作选中标记 */
+.item h3{position:relative;padding-left:18px}
+.item h3::before{
+  content:"";position:absolute;left:0;top:.52em;width:8px;height:8px;
+  background:var(--magenta);opacity:.55;transition:opacity .25s ease,transform .25s ease;
+}
+.item:hover h3::before{opacity:1;transform:scale(1.15)}
+
+/* hover 用渗色，不改字色 */
+.item:hover{background:linear-gradient(90deg,rgba(255,79,168,.08),transparent 55%)}
+.links a:hover{color:var(--acid-ink)}
+footer a:hover{color:var(--acid-ink)}
+nav a:hover{color:var(--ink);text-decoration-color:rgba(214,255,46,.85)}
+
+/* 正文内链接：品红只做下划线 */
 .about a, .hero-sub a{text-decoration:underline;
-  text-decoration-color:rgba(255,46,147,.65);text-underline-offset:4px}
+  text-decoration-color:rgba(255,79,168,.8);text-underline-offset:4px}
+
+/* 页脚色标条：三个 8px 方块，印刷对色用 */
+.foot::after{
+  content:"";display:block;width:100%;height:8px;margin-top:46px;
+  background:
+    linear-gradient(var(--acid-ink),var(--acid-ink)) left/28% 100% no-repeat,
+    linear-gradient(var(--magenta),var(--magenta)) 36% 0/28% 100% no-repeat,
+    linear-gradient(rgba(242,237,227,.32),rgba(242,237,227,.32)) 72% 0/28% 100% no-repeat;
+}
 
 /* 锚点跳转别被吸顶导航挡住 */
 section[id],footer[id]{scroll-margin-top:88px}
