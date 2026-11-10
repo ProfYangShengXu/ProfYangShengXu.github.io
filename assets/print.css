@@ -1,0 +1,163 @@
+/* ─────────────────────────────────────────────────────────────
+   print.css — 暗底印刷层（halftone / risograph）
+   基准仍是原站暗色，本层只加"印"的质感：网点、套色、硬投影。
+   不碰字号、字距、行高，不改任何文案结构。
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --magenta:#FF2E93;
+  --cyan:#00C8FF;
+  --red:#E4442B;
+  --acid-ink:#D6FF2E;
+}
+
+/* 胶片颗粒：极轻，只在大面积暗部可见 */
+body{
+  background-image:radial-gradient(rgba(255,255,255,.013) .6px, transparent .8px);
+  background-size:4px 4px;
+}
+
+/* 半调圆盘：品红（右上）+ 酸绿（左下），screen 叠色 */
+.hero{position:relative}
+.hero::after{
+  content:"";position:absolute;z-index:0;pointer-events:none;
+  right:-7vw;top:-7vh;width:44vw;height:44vw;border-radius:50%;
+  background-image:radial-gradient(rgba(255,46,147,.95) 2.2px, transparent 2.4px);
+  background-size:11px 11px;
+  opacity:.28;mix-blend-mode:screen;
+  -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 30%, transparent 66%);
+          mask-image:radial-gradient(circle at 50% 50%, #000 30%, transparent 66%);
+}
+.hero::before{
+  content:"";position:absolute;z-index:0;pointer-events:none;
+  left:-8vw;bottom:-16vh;width:26vw;height:26vw;border-radius:50%;
+  background-image:radial-gradient(rgba(214,255,46,.95) 1.9px, transparent 2.1px);
+  background-size:9px 9px;
+  opacity:.13;mix-blend-mode:screen;
+  -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 26%, transparent 62%);
+          mask-image:radial-gradient(circle at 50% 50%, #000 26%, transparent 62%);
+}
+.hero > *:not(.halftone):not(.regmark){position:relative;z-index:1}
+
+/* 通用网点容器 */
+.halftone{
+  position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(255,46,147,.9) 1.1px, transparent 1.3px);
+  background-size:6px 6px;opacity:.07;mix-blend-mode:screen;
+  -webkit-mask-image:radial-gradient(120% 78% at 72% 6%, #000 10%, transparent 66%);
+          mask-image:radial-gradient(120% 78% at 72% 6%, #000 10%, transparent 66%);
+}
+
+/* 套准十字：印刷定位标 */
+.regmark{
+  position:absolute;width:24px;height:24px;opacity:.30;z-index:2;
+  background:
+    linear-gradient(var(--ink),var(--ink)) center/1px 100% no-repeat,
+    linear-gradient(var(--ink),var(--ink)) center/100% 1px no-repeat;
+  border-radius:50%;
+}
+.regmark::after{content:"";position:absolute;inset:6px;border:1px solid var(--ink);border-radius:50%}
+.regmark.tl{top:78px;left:14px}
+.regmark.br{bottom:16px;right:14px}
+
+/* 按钮：盖章式硬投影，酸色 */
+.btn{
+  border-width:1px;
+  box-shadow:4px 4px 0 rgba(214,255,46,.75);
+  transition:transform .12s ease, box-shadow .12s ease, background .18s ease, color .18s ease;
+}
+.btn:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(214,255,46,.75)}
+.btn.ghost{box-shadow:none;border-color:var(--line)}
+.btn.ghost:hover{box-shadow:2px 2px 0 rgba(242,237,227,.35)}
+
+/* 章节序号：做成小色块，像印刷里的色标条 */
+.sec-idx{
+  color:#0b0b0c;background:var(--acid-ink);
+  padding:2px 8px;letter-spacing:.14em;
+}
+
+/* 作品行 hover：一丝品红渗墨，不做位移 */
+.item{transition:background .28s ease,border-color .3s}
+.item:hover{padding-left:14px;background:linear-gradient(90deg,rgba(255,46,147,.10),transparent 62%)}
+
+/* 作品缩略图（若存在）：灰度 + 网点叠印 */
+.print-img{position:relative;overflow:hidden;border:1px solid var(--line)}
+.print-img img{display:block;width:100%;filter:grayscale(1) contrast(1.2)}
+.print-img::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(rgba(255,46,147,.75) 1px, transparent 1.2px);
+  background-size:4px 4px;opacity:.22;mix-blend-mode:screen;
+}
+
+/* 页脚：只加一条网点带，标题保持干净（不做错位套印） */
+footer{position:relative}
+footer::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:56px;pointer-events:none;
+  background-image:radial-gradient(rgba(242,237,227,.55) 1.1px, transparent 1.3px);
+  background-size:7px 7px;
+  opacity:.10;mix-blend-mode:screen;
+  -webkit-mask-image:linear-gradient(#000,transparent);
+          mask-image:linear-gradient(#000,transparent);
+}
+
+/* ── 排版语言升级 ─────────────────────────────────────────── */
+
+/* ②-1 标题收紧：大字号下宋体默认往外散 */
+h1{letter-spacing:-.025em}
+h1 .mono{letter-spacing:-.02em}
+
+/* ③ 半调字：笔画里填网点，只给一个词用 */
+.ht{
+  background-image:
+    radial-gradient(#D6FF2E 3.2px, transparent 3.45px),
+    linear-gradient(rgba(214,255,46,.30), rgba(214,255,46,.30));
+  background-size:6.5px 6.5px, 100% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;
+}
+@supports not ((-webkit-background-clip:text) or (background-clip:text)){
+  .ht{color:var(--acid-ink);background-image:none}
+}
+
+/* ②-2 左侧竖排书脊（书页边轨，读作自下而上） */
+.rail{
+  position:fixed;left:12px;top:50%;z-index:40;pointer-events:none;
+  writing-mode:vertical-rl;transform:translateY(-50%) rotate(180deg);
+  font-family:var(--mono);font-size:10px;letter-spacing:.42em;
+  color:rgba(242,237,227,.22);
+}
+@media (max-width:1240px){.rail{display:none}}
+
+/* ④ 页眉式章节条：编号 · 中文 · 刻度线 · 英文 */
+.sec-head{align-items:baseline}
+.sec-idx{align-self:center}
+.sec-rule{
+  flex:1;height:1px;align-self:center;
+  background:linear-gradient(90deg,rgba(242,237,227,.22),rgba(242,237,227,.06));
+  margin:0 4px;
+}
+.sec-en{
+  font-family:var(--mono);font-size:10px;letter-spacing:.26em;
+  color:rgba(242,237,227,.40);white-space:nowrap;
+}
+
+/* ① 字阶与行高：正文抬到 17px，暗底更耐读 */
+.hero-sub{font-size:17px;line-height:1.92}
+.hero-role + .hero-sub{font-size:17.5px;color:rgba(242,237,227,.80)}
+.item p{font-size:15.5px;line-height:1.9}
+.about p{font-size:16px;line-height:2.02}
+.step p{font-size:14.5px;line-height:1.85}
+
+@media (max-width:720px){
+  .hero-sub{font-size:16px}
+  .hero-role + .hero-sub{font-size:16.5px}
+  .sec-en{display:none}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  html.js .reveal{transition:none;opacity:1;transform:none}
+}
+@media (max-width:720px){
+  .hero::after{width:64vw;height:64vw;right:-18vw;opacity:.22}
+  .hero::before{display:none}
+}
